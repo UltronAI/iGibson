@@ -70,6 +70,14 @@ class Pedestrian(Object):
         p.resetBasePositionAndOrientation(
             self.body_id, pos, p.getQuaternionFromEuler(euler_angle))
 
+    def get_yaw(self):
+        quat_orientation = super().get_orientation()
+
+        euler_orientation = p.getEulerFromQuaternion(quat_orientation)
+
+        yaw = euler_orientation[2] - self.default_orn_euler[2]
+        return yaw
+
     # def reset_position_orientation(self, pos, orn):
     #     """
     #     Reset pedestrian position and orientation by changing constraint
