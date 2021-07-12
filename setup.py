@@ -114,7 +114,7 @@ else:
         long_description = fh.read()
 
 setup(
-    name='gibson2',
+    name='gibson2_for_nav',
     version='1.0.1',
     author='Stanford University',
     long_description_content_type="text/markdown",
