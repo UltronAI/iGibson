@@ -75,7 +75,7 @@ class IndoorScene(Scene):
         for floor in range(len(self.floor_heights)):
             if self.trav_map_type == 'with_obj':
                 trav_map = np.array(Image.open(
-                    os.path.join(maps_path, 'floor_trav_{}.png'.format(floor)) # FIXME: [1] floor_trav_{}_new.png ?
+                    os.path.join(maps_path, 'floor_trav_{}_new.png'.format(floor)) # FIXME: [1] floor_trav_{}_new.png ?
                 ))
                 obstacle_map = np.array(Image.open(
                     os.path.join(maps_path, 'floor_{}.png'.format(floor))
@@ -96,12 +96,15 @@ class IndoorScene(Scene):
                 self.trav_map_size = int(self.trav_map_original_size *
                                          self.trav_map_default_resolution /
                                          self.trav_map_resolution)
-            trav_map[obstacle_map == 0] = 0 # FIXME: [1] drop this line ?
+            # trav_map[obstacle_map == 0] = 0 # FIXME: [1] drop this line ?
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
             trav_map = cv2.erode(trav_map, np.ones(
                 (self.trav_map_erosion, self.trav_map_erosion)))
             trav_map[trav_map < 255] = 0
+
+            # FIXME: for debug
+            cv2.imwrite(os.path.join(maps_path, "debug_trav_map.png"), trav_map)
 
             if self.build_graph:
                 self.build_trav_graph(maps_path, floor, trav_map)
