@@ -22,8 +22,8 @@ class iGibsonEnv(object):
         self.env = inner_iGibsonEnv(config_file=self.config,
                                     mode=self.mode,
                                     scene_id=scene_id,
-                                    action_timestep=1.0 / 40.0,
-                                    physics_timestep=1.0 / 40.0,
+                                    action_timestep=1.0 / 10.0,
+                                    physics_timestep=1.0 / 240.0,
                                     device_idx=args.render_gpu_ids[0] if device_idx is None else device_idx)
         
         self.observation_space = []
