@@ -416,6 +416,8 @@ class iGibsonEnv(BaseEnv):
 
         if not land_success:
             print("WARNING: Failed to land")
+            if is_robot:
+                raise ValueError("Failed to land robot: scene_id: {}".format(self.scene.scene_id))
 
         if is_robot:
             obj.robot_specific_reset()

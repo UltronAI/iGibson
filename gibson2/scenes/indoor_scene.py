@@ -13,6 +13,8 @@ import pybullet as p
 import os
 from gibson2.scenes.scene_base import Scene
 
+import time
+
 
 class IndoorScene(Scene):
     """
@@ -70,12 +72,14 @@ class IndoorScene(Scene):
             logging.warning('trav map does not exist: {}'.format(maps_path))
             return
 
+        self._maps_path = maps_path
+
         self.floor_map = []
         self.floor_graph = []
         for floor in range(len(self.floor_heights)):
             if self.trav_map_type == 'with_obj':
                 trav_map = np.array(Image.open(
-                    os.path.join(maps_path, 'floor_trav_{}_new.png'.format(floor)) # FIXME: [1] floor_trav_{}_new.png ?
+                    os.path.join(maps_path, 'floor_trav_{}.png'.format(floor)) # FIXME: [1] floor_trav_{}_new.png ?
                 ))
                 obstacle_map = np.array(Image.open(
                     os.path.join(maps_path, 'floor_{}.png'.format(floor))
@@ -96,7 +100,7 @@ class IndoorScene(Scene):
                 self.trav_map_size = int(self.trav_map_original_size *
                                          self.trav_map_default_resolution /
                                          self.trav_map_resolution)
-            # trav_map[obstacle_map == 0] = 0 # FIXME: [1] drop this line ?
+            trav_map[obstacle_map == 0] = 0 # FIXME: [1] drop this line ?
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
             trav_map = cv2.erode(trav_map, np.ones(
@@ -168,7 +172,7 @@ class IndoorScene(Scene):
         xy_map = np.array([trav_space[0][idx], trav_space[1][idx]])
         x, y = self.map_to_world(xy_map)
         z = self.floor_heights[floor]
-        return floor, np.array([x, y, z])
+        return floor, np.array([x, y, z]), xy_map
 
     def map_to_world(self, xy):
         """
@@ -249,3 +253,17 @@ class IndoorScene(Scene):
                     (path_world, remaining_waypoints), axis=0)
 
         return path_world, geodesic_distance
+
+    def draw_points(self, points, colors, floor_num):
+        trav_map = self.floor_map[floor_num]
+        trav_map_rgb = np.tile(trav_map[..., None], [1, 1, 3])
+        for point, color in zip(points, colors):
+            if color == "red":
+                trav_map_rgb[(point[0]-2):(point[0]+3), (point[1]-2):(point[1]+3)] = np.array([0, 0, 255])
+                trav_map_rgb[point[0], point[1]] = np.array([0, 255, 0])
+            elif color == 'blue':
+                trav_map_rgb[(point[0]-2):(point[0]+3), (point[1]-2):(point[1]+3)] = np.array([255, 0, 0])
+                trav_map_rgb[point[0], point[1]] = np.array([0, 255, 0])
+            else:
+                raise NotImplementedError("please use red or blue")
+        cv2.imwrite(os.path.join(self._maps_path, f"draw_points.png"), trav_map_rgb)

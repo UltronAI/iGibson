@@ -23,11 +23,11 @@ class PointNavRandomTask(PointNavFixedTask):
         :param env: environment instance
         :return: initial pose and target position
         """
-        _, initial_pos = env.scene.get_random_point(floor=self.floor_num)
+        _, initial_pos, initial_map_pos = env.scene.get_random_point(floor=self.floor_num)
         max_trials = 100
         dist = 0.0
         for _ in range(max_trials):
-            _, target_pos = env.scene.get_random_point(floor=self.floor_num)
+            _, target_pos, target_map_pos = env.scene.get_random_point(floor=self.floor_num)
             if env.scene.build_graph:
                 _, dist = env.scene.get_shortest_path(
                     self.floor_num,
@@ -37,6 +37,8 @@ class PointNavRandomTask(PointNavFixedTask):
                 dist = l2_distance(initial_pos, target_pos)
             if self.target_dist_min < dist < self.target_dist_max:
                 break
+
+        # env.scene.draw_points([initial_map_pos, target_map_pos], ['red', 'blue'], self.floor_num)
         if not (self.target_dist_min < dist < self.target_dist_max):
             print("WARNING: Failed to sample initial and target positions")
         initial_orn = np.array([0, 0, np.random.uniform(0, np.pi * 2)])
