@@ -16,6 +16,20 @@ class PointNavRandomTask(PointNavFixedTask):
         self.target_dist_min = self.config.get('target_dist_min', 1.0)
         self.target_dist_max = self.config.get('target_dist_max', 10.0)
 
+        self.offline_eval = self.config.get(
+            'load_scene_episode_config', False)
+        scene_episode_config_path = self.config.get(
+            'scene_episode_config_name', None)
+
+        if self.offline_eval:
+            path = scene_episode_config_path
+            self.episode_config = \
+                PointNavEpisodesConfig.load_scene_episode_config(path) # FIXME: add this class
+            if env.scene.scene_id != self.episode_config.scene_id:
+                raise ValueError("The scene to run the simulation in is '{}' from the " " \
+                                scene used to collect the episode samples".format(
+                    env.scene.scene_id))
+
     def sample_initial_pose_and_target_pos(self, env):
         """
         Sample robot initial pose and target position
@@ -63,22 +77,27 @@ class PointNavRandomTask(PointNavFixedTask):
 
         # cache pybullet state
         # TODO: p.saveState takes a few seconds, need to speed up
-        state_id = p.saveState()
-        for i in range(max_trials):
-            initial_pos, initial_orn, target_pos = \
-                self.sample_initial_pose_and_target_pos(env)
-            reset_success = env.test_valid_position(
-                env.robots[0], initial_pos, initial_orn) and \
-                env.test_valid_position(
-                    env.robots[0], target_pos)
-            p.restoreState(state_id)
-            if reset_success:
-                break
+        
+        if self.offline_eval:
+            print("load initial pose and target position from config ...")
+            raise NotImplementedError
+        else:
+            state_id = p.saveState()
+            for i in range(max_trials):
+                initial_pos, initial_orn, target_pos = \
+                    self.sample_initial_pose_and_target_pos(env)
+                reset_success = env.test_valid_position(
+                    env.robots[0], initial_pos, initial_orn) and \
+                    env.test_valid_position(
+                        env.robots[0], target_pos)
+                p.restoreState(state_id)
+                if reset_success:
+                    break
 
-        if not reset_success:
-            logging.warning("WARNING: Failed to reset robot without collision")
+            if not reset_success:
+                logging.warning("WARNING: Failed to reset robot without collision")
 
-        p.removeState(state_id)
+            p.removeState(state_id)
 
         self.target_pos = target_pos
         self.initial_pos = initial_pos
