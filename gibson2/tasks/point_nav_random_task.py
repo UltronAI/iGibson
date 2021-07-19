@@ -1,5 +1,6 @@
 from gibson2.tasks.point_nav_fixed_task import PointNavFixedTask
 from gibson2.utils.utils import l2_distance
+from gibson2.episodes.episode_sample import PointNavEpisodesConfig
 import pybullet as p
 import logging
 import numpy as np
@@ -74,14 +75,20 @@ class PointNavRandomTask(PointNavFixedTask):
         """
         reset_success = False
         max_trials = 100
-
-        # cache pybullet state
-        # TODO: p.saveState takes a few seconds, need to speed up
         
         if self.offline_eval:
             print("load initial pose and target position from config ...")
-            raise NotImplementedError
+            self.episode_config.reset_episode()
+            episode_index = self.episode_config.episode_index
+            initial_pos = np.array(
+                self.episode_config.episodes[episode_index]['initial_pos'])
+            initial_orn = np.array(
+                self.episode_config.episodes[episode_index]['initial_orn'])
+            target_pos = np.array(
+                self.episode_config.episodes[episode_index]['target_pos'])
         else:
+            # cache pybullet state
+            # TODO: p.saveState takes a few seconds, need to speed up
             state_id = p.saveState()
             for i in range(max_trials):
                 initial_pos, initial_orn, target_pos = \
