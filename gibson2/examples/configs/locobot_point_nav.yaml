@@ -4,9 +4,10 @@ scene_id: Rs_int
 build_graph: true
 load_texture: true
 pybullet_load_texture: true
-trav_map_type: no_obj
+trav_map_type: with_obj
 trav_map_resolution: 0.1
-trav_map_erosion: 2
+trav_map_default_resolution: 0.01
+trav_map_erosion: 4
 should_open_all_doors: true
 
 # domain randomization
@@ -50,8 +51,8 @@ output: [task_obs, rgb, depth]
 # Intel Realsense Depth Camera D435
 # https://store.intelrealsense.com/buy-intel-realsense-depth-camera-d435.html
 fisheye: false
-image_width: 160
-image_height: 90
+image_width: 320
+image_height: 180
 vertical_fov: 42.5
 # depth
 depth_low : 0.1
