@@ -53,7 +53,8 @@ class Evaluator:
             env = iGibsonEnv(config_file=env_config,
                              mode='headless',
                              action_timestep=1.0 / 2.0,
-                             physics_timestep=1.0 / 40.0)
+                             physics_timestep=1.0 / 40.0,
+                             device_idx=2)
 
             for _ in range(num_episodes_per_scene):
                 idx += 1
@@ -89,7 +90,7 @@ def main(args):
     args = parser.parse_known_args(args)[0]
 
     config_file = "../examples/configs/locobot_point_nav_discrete.yaml"
-    split = "eval"
+    split = "minival"
     episodes_dir = "../data/episodes_data/point_nav"
     evaluator = Evaluator(config_file, split, episodes_dir)
     agent = rMAPPOAgent(args.model)

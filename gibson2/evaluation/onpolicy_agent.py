@@ -60,11 +60,14 @@ class rMAPPOAgent:
         self.all_args = get_config().parse_known_args()[0]
 
         self.all_args.__dict__ = self.load_args(str(self.model_dir) + '/config.yaml')
+        if 'multi_stage_mode' not in self.all_args.__dict__.keys():
+            self.all_args.__dict__['multi_stage_mode'] = 0
 
         print("=" * 30)
         print(self.all_args.__dict__)
         print("=" * 30)
         self.all_args.use_pretrained_model = False
+        self.all_args.use_multi_gpu = False
 
         self.load_observation_space()
         self.load_action_space()

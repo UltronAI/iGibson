@@ -76,6 +76,29 @@ class PointNavRandomTask(PointNavFixedTask):
         reset_success = False
         max_trials = 100
         
+        state_id = p.saveState()
+        for i in range(max_trials):
+            initial_pos, initial_orn, target_pos = \
+                self.sample_initial_pose_and_target_pos(env)
+            reset_success = env.test_valid_position(
+                env.robots[0], initial_pos, initial_orn) and \
+                env.test_valid_position(
+                    env.robots[0], target_pos)
+            p.restoreState(state_id)
+            if reset_success:
+                break
+
+        if not reset_success:
+            logging.warning("WARNING: Failed to reset robot without collision")
+
+        p.removeState(state_id)
+
+        self.target_pos = target_pos
+        self.initial_pos = initial_pos
+        self.initial_orn = initial_orn
+
+        super(PointNavRandomTask, self).reset_agent(env)
+
         if self.offline_eval:
             print("load initial pose and target position from config ...")
             self.episode_config.reset_episode()
@@ -86,28 +109,8 @@ class PointNavRandomTask(PointNavFixedTask):
                 self.episode_config.episodes[episode_index]['initial_orn'])
             target_pos = np.array(
                 self.episode_config.episodes[episode_index]['target_pos'])
-        else:
-            # cache pybullet state
-            # TODO: p.saveState takes a few seconds, need to speed up
-            state_id = p.saveState()
-            for i in range(max_trials):
-                initial_pos, initial_orn, target_pos = \
-                    self.sample_initial_pose_and_target_pos(env)
-                reset_success = env.test_valid_position(
-                    env.robots[0], initial_pos, initial_orn) and \
-                    env.test_valid_position(
-                        env.robots[0], target_pos)
-                p.restoreState(state_id)
-                if reset_success:
-                    break
 
-            if not reset_success:
-                logging.warning("WARNING: Failed to reset robot without collision")
-
-            p.removeState(state_id)
-
-        self.target_pos = target_pos
-        self.initial_pos = initial_pos
-        self.initial_orn = initial_orn
-
-        super(PointNavRandomTask, self).reset_agent(env)
+            self.target_pos = target_pos
+            self.initial_pos = initial_pos
+            self.initial_orn = initial_orn
+            env.robots[0].set_position_orientation(initial_pos, initial_orn)
