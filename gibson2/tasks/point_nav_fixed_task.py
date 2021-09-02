@@ -9,6 +9,7 @@ from gibson2.termination_conditions.point_goal import PointGoal
 from gibson2.reward_functions.potential_reward import PotentialReward
 from gibson2.reward_functions.collision_reward import CollisionReward
 from gibson2.reward_functions.point_goal_reward import PointGoalReward
+from gibson2.reward_functions.slack_reward import SlackReward
 
 from gibson2.utils.utils import l2_distance, rotate_vector_3d, cartesian_to_polar
 from gibson2.objects.visual_marker import VisualMarker
@@ -35,6 +36,7 @@ class PointNavFixedTask(BaseTask):
             PotentialReward(self.config),
             CollisionReward(self.config),
             PointGoalReward(self.config),
+            SlackReward(self.config),
         ]
 
         self.initial_pos = np.array(self.config.get('initial_pos', [0, 0, 0]))
