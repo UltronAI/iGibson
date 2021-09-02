@@ -38,6 +38,8 @@ class iGibsonEnv(BaseEnv):
         device_idx=0,
         render_to_tensor=False,
         automatic_reset=False,
+        reward_weights=None,
+        image_size=None
     ):
         """
         :param config_file: config_file path
@@ -55,7 +57,9 @@ class iGibsonEnv(BaseEnv):
                                          action_timestep=action_timestep,
                                          physics_timestep=physics_timestep,
                                          device_idx=device_idx,
-                                         render_to_tensor=render_to_tensor)
+                                         render_to_tensor=render_to_tensor,
+                                         reward_weights=reward_weights,
+                                         image_size=image_size)
         self.automatic_reset = automatic_reset
 
     def load_task_setup(self):

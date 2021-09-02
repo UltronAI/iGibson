@@ -14,12 +14,28 @@ class iGibsonEnv(object):
         self.scenario_name = args.scenario_name
         self.config = gibson2.__path__[0] + '/examples/configs/' + str(self.scenario_name) + '.yaml'
 
+        try:
+            reward_weights = {
+                'collision_reward_weight': args.collision_reward_weight,
+                'potential_reward_weight': args.potential_reward_weight
+            }
+        except:
+            reward_weights = None
+
+        try:
+            image_size = (args.frame_width, args.frame_height)
+        except:
+            image_size = None
+
         self.env = inner_iGibsonEnv(config_file=self.config,
                                     mode=self.mode,
                                     scene_id=scene_id,
-                                    action_timestep=1.0 / 2.0,
+                                    action_timestep=1.0 / 10.0,
                                     physics_timestep=1.0 / 240.0,
-                                    device_idx=args.render_gpu_ids[0] if device_idx is None else device_idx)
+                                    device_idx=args.render_gpu_ids[0] if device_idx is None else device_idx,
+                                    reward_weights=reward_weights,
+                                    image_size=image_size
+                                    )
         
         self.observation_space = []
         self.share_observation_space = []
@@ -39,14 +55,14 @@ class iGibsonEnv(object):
         obs = self.env.reset()
         for key, value in obs.items():
             obs[key] = [value]
-        return obs, obs, None
+        return obs, None
 
     def step(self, actions):
         obs, reward, done, info = self.env.step(actions[0])
 
         for key, value in obs.items():
             obs[key] = [value]
-        return obs, obs, [[reward]], [done], [info], None
+        return obs, [[reward]], [done], [info]
  
     def close(self):
         self.env.close()

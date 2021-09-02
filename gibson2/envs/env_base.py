@@ -31,7 +31,9 @@ class BaseEnv(gym.Env):
                  action_timestep=1 / 10.0,
                  physics_timestep=1 / 240.0,
                  render_to_tensor=False,
-                 device_idx=0):
+                 device_idx=0,
+                 reward_weights=None,
+                 image_size=None):
         """
         :param config_file: config_file path
         :param scene_id: override scene_id in config file
@@ -43,6 +45,9 @@ class BaseEnv(gym.Env):
         self.config = parse_config(config_file)
         if scene_id is not None:
             self.config['scene_id'] = scene_id
+        if reward_weights is not None and isinstance(reward_weights, dict):
+            for k, w in reward_weights.items():
+                self.config[k] = w
 
         self.mode = mode
         self.action_timestep = action_timestep
@@ -62,6 +67,14 @@ class BaseEnv(gym.Env):
                                         enable_pbr=enable_pbr,
                                         msaa=False,
                                         texture_scale=texture_scale)
+
+        if image_size is not None:
+            self.config['image_width'] = image_size[0]
+            self.config['image_height'] = image_size[1]
+
+        print(">>>>> iGibson config:")
+        print(self.config)
+        print(">>>>>")
 
         self.simulator = Simulator(mode=mode,
                                    physics_timestep=physics_timestep,
