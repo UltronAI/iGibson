@@ -16,6 +16,13 @@ from gibson2.utils.utils import parse_config
 from gibson2.render.mesh_renderer.mesh_renderer_settings import MeshRendererSettings
 import gym
 
+import os
+
+def write_dict_to_file(config, file_dir):
+    with open(os.path.join(file_dir, "env_config.yaml"), "w") as f:
+        for k, v in config.items():
+            f.write(f"{k}: {v}\n")
+    print("finish saving env_config")
 
 class BaseEnv(gym.Env):
     '''
@@ -33,7 +40,8 @@ class BaseEnv(gym.Env):
                  render_to_tensor=False,
                  device_idx=0,
                  reward_weights=None,
-                 image_size=None):
+                 image_size=None,
+                 run_dir=None):
         """
         :param config_file: config_file path
         :param scene_id: override scene_id in config file
@@ -75,6 +83,8 @@ class BaseEnv(gym.Env):
 
         print(">>>>> iGibson config:")
         print(self.config)
+        if run_dir is not None:
+            write_dict_to_file(self.config, run_dir)
         print(">>>>>")
 
         self.simulator = Simulator(mode=mode,

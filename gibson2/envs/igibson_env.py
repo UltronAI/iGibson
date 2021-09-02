@@ -39,7 +39,8 @@ class iGibsonEnv(BaseEnv):
         render_to_tensor=False,
         automatic_reset=False,
         reward_weights=None,
-        image_size=None
+        image_size=None,
+        run_dir=None,
     ):
         """
         :param config_file: config_file path
@@ -59,7 +60,8 @@ class iGibsonEnv(BaseEnv):
                                          device_idx=device_idx,
                                          render_to_tensor=render_to_tensor,
                                          reward_weights=reward_weights,
-                                         image_size=image_size)
+                                         image_size=image_size,
+                                         run_dir=run_dir)
         self.automatic_reset = automatic_reset
 
     def load_task_setup(self):
@@ -464,6 +466,8 @@ class iGibsonEnv(BaseEnv):
 
 
 if __name__ == '__main__':
+    import os
+    from PIL import Image
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--config',
@@ -479,17 +483,35 @@ if __name__ == '__main__':
     env = iGibsonEnv(config_file=args.config,
                      mode=args.mode,
                      action_timestep=1.0 / 10.0,
-                     physics_timestep=1.0 / 40.0)
+                     physics_timestep=1.0 / 240.0)
 
     step_time_list = []
-    for episode in range(100):
+    for episode in range(3):
         print('Episode: {}'.format(episode))
         start = time.time()
         env.reset()
-        for _ in range(100):  # 10 seconds
+        for i_step in range(500):  # 10 seconds
             action = env.action_space.sample()
             state, reward, done, _ = env.step(action)
-            print('reward', reward)
+
+            seg = env.simulator.renderer.render_robot_cameras(modes=('seg'))[0][..., 0]
+
+            rgb = state['rgb']
+            depth = state['depth']
+            task_obs = state['task_obs']
+
+            if i_step % 1 == 0:
+                rgb = Image.fromarray((rgb * 255.0).astype(np.uint8))
+                depth = Image.fromarray((depth[..., 0] * 255.0).astype(np.uint8))
+
+                if not os.path.exists(f"vis_demo/{episode:03d}"):
+                    os.makedirs(f"vis_demo/{episode:03d}")
+
+                rgb.save("{}/{:03d}/{:03d}_rgb.jpg".format('vis_demo', episode, i_step))
+                depth.save("{}/{:03d}/{:03d}_depth.png".format('vis_demo', episode, i_step))
+                with open(f"vis_demo/{episode:03d}/{i_step:03d}_goal.txt", "w") as f:
+                    f.write(str(list(task_obs)) + "\n")
+
             if done:
                 break
         print('Episode finished after {} timesteps, took {} seconds.'.format(
