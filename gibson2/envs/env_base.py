@@ -45,9 +45,6 @@ class BaseEnv(gym.Env):
         self.config = parse_config(config_file)
         if scene_id is not None:
             self.config['scene_id'] = scene_id
-        if reward_weights is not None and isinstance(reward_weights, dict):
-            for k, w in reward_weights.items():
-                self.config[k] = w
 
         self.mode = mode
         self.action_timestep = action_timestep
@@ -67,6 +64,10 @@ class BaseEnv(gym.Env):
                                         enable_pbr=enable_pbr,
                                         msaa=False,
                                         texture_scale=texture_scale)
+
+        if reward_weights is not None and isinstance(reward_weights, dict):
+            for k, w in reward_weights.items():
+                self.config[k] = w
 
         if image_size is not None:
             self.config['image_width'] = image_size[0]
