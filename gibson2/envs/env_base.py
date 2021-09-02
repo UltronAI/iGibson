@@ -75,6 +75,7 @@ class BaseEnv(gym.Env):
 
         if reward_weights is not None and isinstance(reward_weights, dict):
             for k, w in reward_weights.items():
+                assert 'reward' in k, k
                 self.config[k] = w
 
         if image_size is not None:

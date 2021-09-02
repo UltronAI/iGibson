@@ -12,6 +12,7 @@ class CollisionReward(BaseRewardFunction):
         self.collision_reward_weight = self.config.get(
             'collision_reward_weight', -0.1
         )
+        print('collision_reward_weight', self.collision_reward_weight)
 
     def get_reward(self, task, env):
         """

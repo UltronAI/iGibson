@@ -7,12 +7,13 @@ class SlackReward(BaseRewardFunction):
     """
     def __init__(self, config):
         super(SlackReward, self).__init__(config)
-        self.slack_reward_weight = self.config.get(
-            'slack_reward_weight', -0.01
+        self.slack_reward = self.config.get(
+            'slack_reward', -0.01
         )
+        print("slack reward", self.slack_reward)
 
     def reset(self, task, env):
         pass
 
     def get_reward(self, task, env):
-        return self.slack_reward_weight
+        return self.slack_reward

@@ -13,6 +13,7 @@ class PotentialReward(BaseRewardFunction):
         self.potential_reward_weight = self.config.get(
             'potential_reward_weight', 1.0
         )
+        print('potential_reward_weight', self.potential_reward_weight)
 
     def reset(self, task, env):
         """

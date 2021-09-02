@@ -14,6 +14,7 @@ class ReachingGoalReward(BaseRewardFunction):
             'success_reward', 10.0
         )
         self.dist_tol = self.config.get('dist_tol', 0.1)
+        print('success_reward', self.success_reward)
 
     def get_reward(self, task, env):
         """

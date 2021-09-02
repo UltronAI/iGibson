@@ -46,18 +46,19 @@ class Locobot(LocomotorRobot):
         """
         Set up discrete action space
         """
-        # action list:
-        # 0: move ahead 0.2m (0.5 m/s * 0.1s)
-        # 1: move back 0.2m (-0.4 m/s * 0.5s)
-        # 2: turn left 45 degree (pi/2 rad/s * 0.1s)
-        # 3: turn right 45 degree (-pi/2 rad/s * 0.5s)
-        self.action_list = [
-            np.array([0.4, 0.0]),
-            np.array([0.0, np.pi / 2]), 
-            np.array([0.0, -np.pi / 2])
-        ]
+        raise NotImplementedError
+        # # action list:
+        # # 0: move ahead 0.2m (0.5 m/s * 0.1s)
+        # # 1: move back 0.2m (-0.4 m/s * 0.5s)
+        # # 2: turn left 45 degree (pi/2 rad/s * 0.1s)
+        # # 3: turn right 45 degree (-pi/2 rad/s * 0.5s)
+        # self.action_list = [
+        #     np.array([0.4, 0.0]),
+        #     np.array([0.0, np.pi / 2]), 
+        #     np.array([0.0, -np.pi / 2])
+        # ]
 
-        self.action_space = gym.spaces.Discrete(len(self.action_list))
+        # self.action_space = gym.spaces.Discrete(len(self.action_list))
 
     def get_end_effector_position(self):
         """

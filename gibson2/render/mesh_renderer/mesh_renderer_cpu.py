@@ -461,7 +461,7 @@ class MeshRenderer(object):
             delta_uv1 = uv1 - uv0
             delta_uv2 = uv2 - uv0
             r = 1.0 / (delta_uv1[:, 0] * delta_uv2[:, 1] -
-                       delta_uv1[:, 1] * delta_uv2[:, 0])
+                       delta_uv1[:, 1] * delta_uv2[:, 0] + 1e-3)
             tangent = (delta_pos1 * delta_uv2[:, 1][:, None] -
                        delta_pos2 * delta_uv1[:, 1][:, None]) * r[:, None]
             bitangent = (delta_pos2 * delta_uv1[:, 0][:, None] -
