@@ -18,11 +18,6 @@ import gym
 
 import os
 
-def write_dict_to_file(config, file_dir):
-    with open(os.path.join(file_dir, "env_config.yaml"), "w") as f:
-        for k, v in config.items():
-            f.write(f"{k}: {v}\n")
-    print("finish saving env_config")
 
 class BaseEnv(gym.Env):
     '''
@@ -38,10 +33,7 @@ class BaseEnv(gym.Env):
                  action_timestep=1 / 10.0,
                  physics_timestep=1 / 240.0,
                  render_to_tensor=False,
-                 device_idx=0,
-                 reward_weights=None,
-                 image_size=None,
-                 run_dir=None):
+                 device_idx=0):
         """
         :param config_file: config_file path
         :param scene_id: override scene_id in config file
@@ -73,19 +65,8 @@ class BaseEnv(gym.Env):
                                         msaa=False,
                                         texture_scale=texture_scale)
 
-        if reward_weights is not None and isinstance(reward_weights, dict):
-            for k, w in reward_weights.items():
-                assert 'reward' in k, k
-                self.config[k] = w
-
-        if image_size is not None:
-            self.config['image_width'] = image_size[0]
-            self.config['image_height'] = image_size[1]
-
         print(">>>>> iGibson config:")
         print(self.config)
-        if run_dir is not None:
-            write_dict_to_file(self.config, run_dir)
         print(">>>>>")
 
         self.simulator = Simulator(mode=mode,
