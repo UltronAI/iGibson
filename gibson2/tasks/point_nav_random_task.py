@@ -31,8 +31,10 @@ class PointNavRandomTask(PointNavFixedTask):
                                 scene used to collect the episode samples".format(
                     env.scene.scene_id))
             self.number_of_episodes = self.episode_config.num_episodes
+            self.episode_index = self.episode_config.episode_index
         else:
             self.number_of_episodes = -1
+            self.episode_index = -1
 
     def sample_initial_pose_and_target_pos(self, env):
         """
@@ -129,4 +131,4 @@ class PointNavRandomTask(PointNavFixedTask):
                 dist = l2_distance(initial_pos, target_pos)
             self.distance_to_goal = dist
         else:
-            self.episode_index = -1
+            self.episode_index += 1
