@@ -25,11 +25,14 @@ class PointNavRandomTask(PointNavFixedTask):
         if self.offline_eval:
             path = scene_episode_config_path
             self.episode_config = \
-                PointNavEpisodesConfig.load_scene_episode_config(path) # FIXME: add this class
+                PointNavEpisodesConfig.load_scene_episode_config(path)
             if env.scene.scene_id != self.episode_config.scene_id:
                 raise ValueError("The scene to run the simulation in is '{}' from the " " \
                                 scene used to collect the episode samples".format(
                     env.scene.scene_id))
+            self.number_of_episodes = self.episode_config.num_episodes
+        else:
+            self.number_of_episodes = -1
 
     def sample_initial_pose_and_target_pos(self, env):
         """
@@ -55,7 +58,7 @@ class PointNavRandomTask(PointNavFixedTask):
         if not (self.target_dist_min < dist < self.target_dist_max):
             print("WARNING: Failed to sample initial and target positions")
         initial_orn = np.array([0, 0, np.random.uniform(0, np.pi * 2)])
-        return initial_pos, initial_orn, target_pos
+        return initial_pos, initial_orn, target_pos, dist
 
     def reset_scene(self, env):
         """
@@ -78,7 +81,7 @@ class PointNavRandomTask(PointNavFixedTask):
         
         state_id = p.saveState()
         for i in range(max_trials):
-            initial_pos, initial_orn, target_pos = \
+            initial_pos, initial_orn, target_pos, dist = \
                 self.sample_initial_pose_and_target_pos(env)
             reset_success = env.test_valid_position(
                 env.robots[0], initial_pos, initial_orn) and \
@@ -96,21 +99,34 @@ class PointNavRandomTask(PointNavFixedTask):
         self.target_pos = target_pos
         self.initial_pos = initial_pos
         self.initial_orn = initial_orn
+        self.distance_to_goal = dist
 
         super(PointNavRandomTask, self).reset_agent(env)
 
         if self.offline_eval:
-            print("load initial pose and target position from config ...")
             self.episode_config.reset_episode()
-            episode_index = self.episode_config.episode_index
+            self.episode_index = self.episode_config.episode_index
+            print(f"load initial pose and target position for episode {self.episode_index} ...")
+
             initial_pos = np.array(
-                self.episode_config.episodes[episode_index]['initial_pos'])
+                self.episode_config.episodes[self.episode_index]['initial_pos'])
             initial_orn = np.array(
-                self.episode_config.episodes[episode_index]['initial_orn'])
+                self.episode_config.episodes[self.episode_index]['initial_orn'])
             target_pos = np.array(
-                self.episode_config.episodes[episode_index]['target_pos'])
+                self.episode_config.episodes[self.episode_index]['target_pos'])
 
             self.target_pos = target_pos
             self.initial_pos = initial_pos
             self.initial_orn = initial_orn
             env.robots[0].set_position_orientation(initial_pos, initial_orn)
+
+            if env.scene.build_graph:
+                _, dist = env.scene.get_shortest_path(
+                    self.floor_num,
+                    initial_pos[:2],
+                    target_pos[:2], entire_path=False)
+            else:
+                dist = l2_distance(initial_pos, target_pos)
+            self.distance_to_goal = dist
+        else:
+            self.episode_index = -1
