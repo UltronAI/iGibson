@@ -4,7 +4,7 @@ from gibson2.tasks.room_rearrangement_task import RoomRearrangementTask
 from gibson2.tasks.point_nav_fixed_task import PointNavFixedTask
 from gibson2.tasks.point_nav_random_task import PointNavRandomTask
 from gibson2.tasks.interactive_nav_random_task import InteractiveNavRandomTask
-# from gibson2.tasks.social_nav_random_task import SocialNavRandomTask
+from gibson2.tasks.social_nav_random_task import SocialNavRandomTask
 from gibson2.tasks.dynamic_nav_random_task import DynamicNavRandomTask
 from gibson2.tasks.reaching_random_task import ReachingRandomTask
 from gibson2.sensors.scan_sensor import ScanSensor
@@ -93,8 +93,7 @@ class iGibsonEnv(BaseEnv):
         elif self.config['task'] == 'interactive_nav_random':
             self.task = InteractiveNavRandomTask(self)
         elif self.config['task'] == 'social_nav_random':
-            raise NotImplementedError
-            # self.task = SocialNavRandomTask(self)
+            self.task = SocialNavRandomTask(self)
         elif self.config['task'] == 'dynamic_nav_random':
             self.task = DynamicNavRandomTask(self)
         elif self.config['task'] == 'reaching_random':
@@ -289,6 +288,7 @@ class iGibsonEnv(BaseEnv):
         """
         info['episode_length'] = self.current_step
         info['collision_step'] = self.collision_step
+        info['collision_rate'] = self.collision_step / self.current_step
 
     def step(self, action):
         """
