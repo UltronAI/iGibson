@@ -104,7 +104,8 @@ class IndoorScene(Scene):
             trav_map[trav_map < 255] = 0
 
             # FIXME: for debug
-            cv2.imwrite(os.path.join(maps_path, "debug_trav_map.png"), trav_map)
+            # cv2.imwrite(os.path.join(maps_path, "debug_trav_map.png"), trav_map)
+            self.debug_trav_map = trav_map
 
             if self.build_graph:
                 self.build_trav_graph(maps_path, floor, trav_map)
