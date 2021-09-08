@@ -66,6 +66,7 @@ class BaseTask():
             d, s = condition.get_termination(self, env)
             done = done or d
             success = success or s
+            info[f'done_{condition.__class__.__name__}'] = d
         info['done'] = done
         info['success'] = success
         return done, info
