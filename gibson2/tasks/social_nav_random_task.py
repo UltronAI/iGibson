@@ -1,4 +1,4 @@
-# from gibson2.episodes.episode_sample import SocialNavEpisodesConfig
+from gibson2.episodes.episode_sample import SocialNavEpisodesConfig
 from gibson2.tasks.point_nav_random_task import PointNavRandomTask
 from gibson2.objects.visual_marker import VisualMarker
 from gibson2.objects.pedestrian import Pedestrian
@@ -129,7 +129,6 @@ class SocialNavRandomTask(PointNavRandomTask):
         # Make sure the task simulation configuration does not conflict
         # with the configuration used to sample our episode
         if self.offline_eval:
-            raise NotImplementedError
             path = scene_episode_config_path
             self.episode_config = \
                 SocialNavEpisodesConfig.load_scene_episode_config(path)
