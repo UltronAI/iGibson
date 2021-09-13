@@ -165,6 +165,8 @@ class PointNavFixedTask(BaseTask):
             info['path_efficiency'] = 0.0
         else:
             info['path_efficiency'] = min(1.0, self.geodesic_dist / self.path_length)
+
+        info['distance_to_goal'] = self.geodesic_dist
         if done:
             info['spl'] = float(info['success']) * \
                 min(1.0, self.geodesic_dist / self.path_length)
