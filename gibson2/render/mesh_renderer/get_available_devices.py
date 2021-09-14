@@ -30,7 +30,7 @@ def get_available_devices():
                 available_devices.append(i)
                 logging.info('Device {} is available for rendering'.format(i))
         except subprocess.CalledProcessError as e:
-            logging.info(e)
+            # logging.info(e)
             logging.info('Device {} is not available for rendering'.format(i))
     FNULL.close()
 

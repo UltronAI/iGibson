@@ -146,6 +146,9 @@ class SocialNavRandomTask(PointNavRandomTask):
                                  "the orca radius used to collect the pedestrians' initial position "
                                  " for our samples.".format(self.orca_radius))
 
+            self.number_of_episodes = self.episode_config.num_episodes
+            self.episode_index = self.episode_config.episode_index
+
     def load_pedestrians(self, env):
         """
         Load pedestrians

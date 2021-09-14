@@ -14,10 +14,14 @@ class EpisodeConfig:
 
     def reset_episode(self):
         self.episode_index += 1
-        if self.episode_index >= self.num_episodes:
-            raise ValueError(
-                "We have exhausted all {} episodes sampels".format(
-                    self.num_episodes))
+        self.episode_index = min(self.episode_index, self.num_episodes - 1)
+        # if self.episode_index >= self.num_episodes:
+        #     raise ValueError(
+        #         "We have exhausted all {} episodes sampels".format(
+        #             self.num_episodes))
+
+    def clean_history(self):
+        self.episode_index = -1
 
 class PointNavEpisodesConfig(EpisodeConfig):
     def __init__(self, scene_id, num_episodes, numpy_seed=0):

@@ -38,7 +38,9 @@ def generate_trav_map(scene_name, scene_source, load_full_scene=True):
     scene = InteractiveIndoorScene(scene_name, 
                                    build_graph=False,
                                    texture_randomization=False,
-                                   scene_source=scene_source)
+                                   scene_source=scene_source,
+                                   not_load_object_categories=['door', 'carpet'],
+                                   should_open_all_doors=False)
     if not load_full_scene:
         scene._set_first_n_objects(3)
     s = Simulator(mode='headless', image_width=512,
@@ -55,11 +57,11 @@ def generate_trav_map(scene_name, scene_source, load_full_scene=True):
     s.disconnect()
 
     if load_full_scene:
-        trav_map_filename_format = 'floor_trav_{}.png'
-        obstacle_map_filename_format = 'floor_{}.png'
+        trav_map_filename_format = 'floor_trav_{}_new.png'
+        obstacle_map_filename_format = 'floor_{}_new.png'
     else:
-        trav_map_filename_format = 'floor_trav_no_obj_{}.png'
-        obstacle_map_filename_format = 'floor_no_obj_{}.png'
+        trav_map_filename_format = 'floor_trav_no_obj_{}_new.png'
+        obstacle_map_filename_format = 'floor_no_obj_{}_new.png'
 
     gen_trav_map(vertices_info, faces_info, 
                  output_folder=os.path.join(scene_dir, 'layout'),
@@ -72,10 +74,12 @@ def main():
         description='Generate Traversability Map')
     parser.add_argument('scene_names', metavar='s', type=str,
                         nargs='+', help='The name of the scene to process')
-    parser.add_argument('--source', dest='source', help='Source of the scene, should be among [CUBICASA, IG, THREEDFRONT]')
+    parser.add_argument('--source', default="IG", dest='source', help='Source of the scene, should be among [CUBICASA, IG, THREEDFRONT]')
 
     args = parser.parse_args()
     for scene_name in args.scene_names:
+        if "int" not in scene_name:
+            pass
         generate_trav_map(scene_name, args.source, False)
         generate_trav_map(scene_name, args.source, True)
 
