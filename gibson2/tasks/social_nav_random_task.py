@@ -411,7 +411,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             ped.set_yaw(yaw)
             desired_vel = next_goal - current_pos[0:2]
             desired_vel = desired_vel / \
-                np.linalg.norm(desired_vel) * self.orca_max_speed
+                (np.linalg.norm(desired_vel) * self.orca_max_speed + 1e-5)
             self.orca_sim.setAgentPrefVelocity(orca_ped, tuple(desired_vel))
 
         self.orca_sim.doStep()
@@ -535,7 +535,7 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         next_normalized_dir = next_dir / np.linalg.norm(next_dir)
 
-        angle = np.arccos(np.dot(normalized_dir, next_normalized_dir))
+        angle = np.arccos(np.clip(np.dot(normalized_dir, next_normalized_dir), -1., 1.))
         return angle >= self.backoff_radian_thresh
 
     def get_termination(self, env, collision_links=[], action=None, info={}):
