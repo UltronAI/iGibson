@@ -63,7 +63,8 @@ class BaseEnv(gym.Env):
         settings = MeshRendererSettings(enable_shadow=enable_shadow,
                                         enable_pbr=enable_pbr,
                                         msaa=False,
-                                        texture_scale=texture_scale)
+                                        texture_scale=texture_scale,
+                                        optimized=('optical_flow' in self.config['output']))
 
         print(">>>>> iGibson config:")
         print(self.config)

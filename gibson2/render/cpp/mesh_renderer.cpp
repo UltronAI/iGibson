@@ -1008,7 +1008,7 @@ py::list MeshRendererContext::generateArrayTextures(std::vector<std::string> fil
 		std::vector<int> texWidths;
 		std::vector<int> texChannels;
 
-		printf("number of textures %d\n", num_textures);
+		// printf("number of textures %d\n", num_textures);
 		for (int i = 0; i < num_textures; i++) {
 			std::string filename = filenames[i];
 			std::cout << "Filename is: " << filename << std::endl;
@@ -1019,7 +1019,7 @@ py::list MeshRendererContext::generateArrayTextures(std::vector<std::string> fil
 			unsigned char* image = stbi_load(filename.c_str(), &w, &h, &comp, STBI_rgb); // force to 3 channels
 			if (image == nullptr)
 				throw(std::string("Failed to load texture"));
-			std::cout << "Size is w: " << w << " by h: " << h << std::endl;
+			// std::cout << "Size is w: " << w << " by h: " << h << std::endl;
 			comp = 3;
 			image_data.push_back(image);
 			texHeights.push_back(h);
@@ -1066,7 +1066,7 @@ py::list MeshRendererContext::generateArrayTextures(std::vector<std::string> fil
 			std::string tex_filename = filenames[i];
 			bool contains_keyword = tex_filename.find("floor") != std::string::npos || tex_filename.find("wall") != std::string::npos || tex_filename.find("ceiling") != std::string::npos;
 			if (score >= texCutoff || contains_keyword) {
-				std::cout << "Appending texture with name: " << tex_filename << " to large bucket" << std::endl;
+				// std::cout << "Appending texture with name: " << tex_filename << " to large bucket" << std::endl;
 				texIndices[0].push_back(i);
 				tex_info_i.append(0);
 				tex_info_i.append(firstTexLayerNum);
@@ -1075,7 +1075,7 @@ py::list MeshRendererContext::generateArrayTextures(std::vector<std::string> fil
 				firstTexLayerNum++;
 			}
 			else {
-				std::cout << "Appending texture with name: " << tex_filename << " to small bucket" << std::endl;
+				// std::cout << "Appending texture with name: " << tex_filename << " to small bucket" << std::endl;
 				texIndices[1].push_back(i);
 				tex_info_i.append(1);
 				tex_info_i.append(secondTexLayerNum);
