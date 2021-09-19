@@ -47,24 +47,21 @@ def draw_agent(
     return top_down_map
 
 def draw_circle(
-    top_down_map: np.ndarray,
-    point: Tuple,
-    color,
-    radius
+    top_down_map, point, color, radius
 ):
     cv2.circle(
         top_down_map, 
-        point[::-1],
+        tuple(point[::-1]),
         radius=radius,
-        color=color,
+        color=tuple(color),
         thickness=-1
     )
     return top_down_map
 
 def draw_path(
-    top_down_map: np.ndarray,
-    path_points: Sequence[Tuple],
-    color: int = 10,
+    top_down_map,
+    path_points,
+    color,
     thickness: int = 2,
 ) -> None:
     r"""Draw path on top_down_map (in place) with specified color.
@@ -78,8 +75,8 @@ def draw_path(
         # Swapping x y
         cv2.line(
             top_down_map,
-            prev_pt[::-1],
-            next_pt[::-1],
+            tuple(prev_pt[::-1]),
+            tuple(next_pt[::-1]),
             color,
             thickness=thickness,
         )
@@ -174,7 +171,7 @@ def get_top_down_map(env, traj):
 
     top_down_map = draw_circle(top_down_map, init_pos, (255, 0, 0), 3)
     top_down_map = draw_circle(top_down_map, goal_pos, (0, 255, 0), 3)
-    top_down_map = draw_path(top_down_map, shortest_path, (255, 0, 0), 2)
+    top_down_map = draw_path(top_down_map, shortest_path, (255, 0, 0), 1)
     top_down_map = draw_path(top_down_map, traj, (0, 0, 255), 1)
 
     top_down_map = draw_agent(
@@ -194,15 +191,8 @@ def get_video_frame(obs, env, traj):
         depth = (np.tile(obs['depth'], [1, 1, 3]) * 255.0).astype(np.uint8)
         frame.append(depth.copy())
 
-    # seg = env.simulator.renderer.render_robot_cameras(modes=('seg'))[0][..., 0]
-    # colored_seg = np.ones([*seg.shape, 3]) * 255.0
-    # for i in range(112):
-    #     colored_seg[(seg * 255.0) == float(i)] = SEG_COLOR[i]
-    # frame.append(colored_seg)
-
-    # frame.append(top_down_map)
     video_frame = np.concatenate(frame, axis=0)
-    cv2.imshow("obs", video_frame[..., ::-1])
+    # cv2.imshow("obs", video_frame[..., ::-1])
     top_down_map = get_top_down_map(env, traj)
     top_down_map = cv2.resize(
         top_down_map, 
@@ -210,9 +200,7 @@ def get_video_frame(obs, env, traj):
         interpolation=cv2.INTER_LINEAR
     )
     frame = np.concatenate([video_frame, top_down_map], axis=1)
-
-    cv2.imshow("frame", frame[..., ::-1])
-    cv2.waitKey(0)
+    return frame
     
 
     
