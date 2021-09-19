@@ -150,6 +150,7 @@ class PointNavFixedTask(BaseTask):
         self.path_length = 0.0
         self.robot_pos = self.initial_pos[:2]
         self.geodesic_dist = self.get_geodesic_potential(env)
+        self.shortest_path, _ = self.get_shortest_path(env, True, True)
         for reward_function in self.reward_functions:
             reward_function.reset(self, env)
 
