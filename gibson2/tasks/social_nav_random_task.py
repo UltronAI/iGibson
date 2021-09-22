@@ -129,12 +129,13 @@ class SocialNavRandomTask(PointNavRandomTask):
         # Make sure the task simulation configuration does not conflict
         # with the configuration used to sample our episode
         if self.offline_eval:
+            print(f"load offline episode config from {scene_episode_config_path}")
             path = scene_episode_config_path
             self.episode_config = \
                 SocialNavEpisodesConfig.load_scene_episode_config(path)
             if self.num_pedestrians != self.episode_config.num_pedestrians:
-                raise ValueError("The episode samples did not record records for more than {} pedestrians".format(
-                    self.num_pedestrians))
+                raise ValueError("The episode samples did not record records for more than {} pedestrians, but got {}".format(
+                    self.num_pedestrians, self.episode_config.num_pedestrians))
             if env.scene.scene_id != self.episode_config.scene_id:
                 raise ValueError("The scene to run the simulation in is '{}' from the " " \
                                 scene used to collect the episode samples".format(
@@ -292,6 +293,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.initial_pos = initial_pos
             self.target_pos = target_pos
             env.robots[0].set_position_orientation(initial_pos, initial_orn)
+            self.shortest_path, _ = self.get_shortest_path(env, True, True)
 
         self.orca_sim.setAgentPosition(self.robot_orca_ped,
                                        tuple(self.initial_pos[0:2]))

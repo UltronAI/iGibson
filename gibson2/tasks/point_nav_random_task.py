@@ -132,5 +132,6 @@ class PointNavRandomTask(PointNavFixedTask):
             else:
                 dist = l2_distance(initial_pos, target_pos)
             self.distance_to_goal = dist
+            self.shortest_path, _ = self.get_shortest_path(env, True, True)
         else:
             self.episode_index += 1
