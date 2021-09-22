@@ -74,9 +74,11 @@ class IndoorScene(Scene):
         self.floor_graph = []
         for floor in range(len(self.floor_heights)):
             if self.trav_map_type == 'with_obj':
+                print(f"loading trav_map from {os.path.join(maps_path, 'floor_trav_{}.png'.format(floor))}")
                 trav_map = np.array(Image.open(
                     os.path.join(maps_path, 'floor_trav_{}.png'.format(floor))
                 ))
+                print(f"loading obstacle_map from {os.path.join(maps_path, 'floor_{}.png'.format(floor))}")
                 obstacle_map = np.array(Image.open(
                     os.path.join(maps_path, 'floor_{}.png'.format(floor))
                 ))
@@ -90,6 +92,7 @@ class IndoorScene(Scene):
                         maps_path, 'floor_no_obj_{}.png'.format(floor))
                 ))
             if self.trav_map_original_size is None:
+                print(trav_map.shape)
                 height, width = trav_map.shape
                 assert height == width, 'trav map is not a square'
                 self.trav_map_original_size = height

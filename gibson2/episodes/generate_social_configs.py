@@ -39,13 +39,14 @@ if __name__ == '__main__':
     raw_num_episodes = num_episodes * 5
 
     dataset_split = {
-        'minival': ['Rs_int'],
-        'train': ['Merom_0_int', 'Benevolence_0_int', 'Pomaria_0_int',
-                  'Wainscott_1_int', 'Rs_int', 'Ihlen_0_int',
-                  'Beechwood_1_int', 'Ihlen_1_int'],
-        'dev':  ['Benevolence_1_int', 'Wainscott_0_int'],
-        'test': ['Pomaria_2_int', 'Benevolence_2_int', 'Beechwood_0_int',
-                 'Pomaria_1_int', 'Merom_1_int']
+        # 'minival': ['Rs_int'],
+        # 'train': ['Merom_0_int', 'Benevolence_0_int', 'Pomaria_0_int',
+        #           'Wainscott_1_int', 'Rs_int', 'Ihlen_0_int',
+        #           'Beechwood_1_int', 'Ihlen_1_int'],
+        # 'dev':  ['Benevolence_1_int', 'Wainscott_0_int'],
+        # 'test': ['Pomaria_2_int', 'Benevolence_2_int']#, 
+        # 'test': ['Beechwood_0_int']
+        'test': ['Pomaria_1_int', 'Merom_1_int']
     }
 
     for split in dataset_split:
@@ -60,7 +61,7 @@ if __name__ == '__main__':
             env = iGibsonEnv(config_file=env_config,
                              mode='headless',
                              action_timestep=1.0 / 10.0,
-                             physics_timestep=1.0 / 40.0)
+                             physics_timestep=1.0 / 240.0)
 
             episode_config = SocialNavEpisodesConfig(
                 num_pedestrians=env.task.num_pedestrians,
@@ -106,7 +107,7 @@ if __name__ == '__main__':
             env = iGibsonEnv(config_file=env_config,
                              mode='headless',
                              action_timestep=1.0 / 10.0,
-                             physics_timestep=1.0 / 40.0)
+                             physics_timestep=1.0 / 240.0)
             assert env.task.dist_tol > env.task.pedestrian_goal_thresh
             filtered_episodes = []
             for i in range(raw_num_episodes):

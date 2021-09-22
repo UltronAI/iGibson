@@ -39,12 +39,12 @@ def generate_trav_map(scene_name, scene_source, load_full_scene=True):
                                    build_graph=False,
                                    texture_randomization=False,
                                    scene_source=scene_source,
-                                   not_load_object_categories=['door', 'carpet'],
+                                   not_load_object_categories=['door'],
                                    should_open_all_doors=False)
     if not load_full_scene:
         scene._set_first_n_objects(3)
-    s = Simulator(mode='headless', image_width=512,
-                  image_height=512, device_idx=0)
+    s = Simulator(mode='headless', image_width=320,
+                  image_height=180, device_idx=0)
     s.import_ig_scene(scene)
     
     if load_full_scene:
@@ -57,11 +57,11 @@ def generate_trav_map(scene_name, scene_source, load_full_scene=True):
     s.disconnect()
 
     if load_full_scene:
-        trav_map_filename_format = 'floor_trav_{}_new.png'
-        obstacle_map_filename_format = 'floor_{}_new.png'
+        trav_map_filename_format = 'floor_trav_{}_nodoor.png'
+        obstacle_map_filename_format = 'floor_{}_nodoor.png'
     else:
-        trav_map_filename_format = 'floor_trav_no_obj_{}_new.png'
-        obstacle_map_filename_format = 'floor_no_obj_{}_new.png'
+        trav_map_filename_format = 'floor_trav_no_obj_{}_nodoor.png'
+        obstacle_map_filename_format = 'floor_no_obj_{}_nodoor.png'
 
     gen_trav_map(vertices_info, faces_info, 
                  output_folder=os.path.join(scene_dir, 'layout'),
