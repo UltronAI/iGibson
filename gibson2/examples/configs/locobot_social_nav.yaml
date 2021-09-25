@@ -9,7 +9,7 @@ pybullet_load_texture: true
 trav_map_type: with_obj
 trav_map_resolution: 0.1
 trav_map_erosion: 2
-should_open_all_doors: False
+should_open_all_doors: false
 not_load_object_categories: [door]
 texture_scale: 0.5
 

@@ -74,14 +74,25 @@ class IndoorScene(Scene):
         self.floor_graph = []
         for floor in range(len(self.floor_heights)):
             if self.trav_map_type == 'with_obj':
-                print(f"loading trav_map from {os.path.join(maps_path, 'floor_trav_{}.png'.format(floor))}")
-                trav_map = np.array(Image.open(
-                    os.path.join(maps_path, 'floor_trav_{}.png'.format(floor))
-                ))
-                print(f"loading obstacle_map from {os.path.join(maps_path, 'floor_{}.png'.format(floor))}")
-                obstacle_map = np.array(Image.open(
-                    os.path.join(maps_path, 'floor_{}.png'.format(floor))
-                ))
+                trav_map_x_path = os.path.join(maps_path, f'floor_trav_{floor}_x.png')
+                trav_map_path = os.path.join(maps_path, f'floor_trav_{floor}.png')
+                if os.path.exists(trav_map_x_path):
+                    print(f"loading trav_map from {trav_map_x_path}")
+                    trav_map = np.array(Image.open(trav_map_x_path))
+                    manual_map = True
+                else:
+                    print(f"loading trav_map from {trav_map_path}")
+                    trav_map = np.array(Image.open(trav_map_path))
+                    manual_map = False
+
+                obstacle_map_x_path = os.path.join(maps_path, f'floor_{floor}_nodoor.png')
+                obstacle_map_path = os.path.join(maps_path, f'floor_{floor}.png')
+                if manual_map:
+                    print(f"loading obstacle_map from {obstacle_map_x_path}")
+                    obstacle_map = np.array(Image.open(obstacle_map_x_path))
+                else:
+                    print(f"loading obstacle_map from {obstacle_map_path}")
+                    obstacle_map = np.array(Image.open(obstacle_map_path))
             else:
                 trav_map = np.array(Image.open(
                     os.path.join(
@@ -99,15 +110,13 @@ class IndoorScene(Scene):
                 self.trav_map_size = int(self.trav_map_original_size *
                                          self.trav_map_default_resolution /
                                          self.trav_map_resolution)
-            trav_map[obstacle_map == 0] = 0 # FIXME: [1] drop this line ?
+            trav_map[obstacle_map == 0] = 0
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
             trav_map = cv2.erode(trav_map, np.ones(
                 (self.trav_map_erosion, self.trav_map_erosion)))
             trav_map[trav_map < 255] = 0
 
-            # FIXME: for debug
-            # cv2.imwrite(os.path.join(maps_path, "debug_trav_map.png"), trav_map)
             self.debug_trav_map = trav_map
 
             if self.build_graph:
