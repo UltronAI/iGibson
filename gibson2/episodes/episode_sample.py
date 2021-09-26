@@ -131,3 +131,75 @@ class SocialNavEpisodesConfig(EpisodeConfig):
         with open(path, 'w+') as f:
             json.dump(save_dict, f, sort_keys=True, indent=4)
         return path
+
+
+class InteractiveNavEpisodesConfig(EpisodeConfig):
+    """
+    Object that holds information about the sampled episodes
+    for a particular scene.
+    """
+
+    def __init__(self, scene_id, num_episodes, numpy_seed=0):
+        """
+        scene_id            Name of the scene to sample the episodes for
+        num_episodes        Number of episodes to sample for
+        num_pedestrians     The number of pedestrians to sample for.
+        orca_radius         The minimum distance between any two pedestrian's
+                            initial positions
+        numpy_seed          Seed number so that we can generate deterministic samples
+        """
+        super(InteractiveNavEpisodesConfig, self).__init__(
+            scene_id, num_episodes, numpy_seed)
+
+        # inital pos, goal pos, orientation
+        for episode_index in range(num_episodes):
+            self.episodes[episode_index] = {
+                'initial_pos': None,
+                'initial_orn': None,
+                'target_pos': None,
+                'interactive_objects': [],
+                'interactive_objects_idx': [],
+            }
+
+    @classmethod
+    def load_scene_episode_config(cls, path):
+        """
+        Class FactoryMethod to load episode samples from a particular file.
+        It parses the json file and instantiates an EpisodeConfig object.
+        :param path: the path to the configuration file
+        :return episode_config: EpisodeConfig instance
+        """
+        with open(path) as f:
+            config = json.load(f)
+        episode_config = InteractiveNavEpisodesConfig(
+            scene_id=config['config']['scene_id'],
+            num_episodes=config['config']['num_episodes'],
+            numpy_seed=config['config']['numpy_seed']
+        )
+        episode_config.episodes = config['episodes']
+
+        return episode_config
+
+    def save_scene_episodes(self, filename):
+        """
+        Saves the scene episode to a .json file at path ./data/{scene_id}/{filename}
+        :param filename: file name
+        :return path: the absolute path of where the path was stored.
+                      To use load_scene_episode_config class method, we need
+                      to pass in this absolute path.
+        """
+        dir_path = os.path.join(
+            os.path.dirname(gibson2.__file__),
+            'episodes', 'data', 'interactive_nav')
+
+        path = os.path.join(dir_path, filename)
+
+        save_dict = {}
+        save_dict['config'] = {}
+        save_dict['config']['num_episodes'] = self.num_episodes
+        save_dict['config']['numpy_seed'] = self.numpy_seed
+        save_dict['config']['scene_id'] = self.scene_id
+        save_dict['episodes'] = self.episodes
+        with open(path, 'w+') as f:
+            json.dump(save_dict, f, sort_keys=True, indent=4)
+        return path
