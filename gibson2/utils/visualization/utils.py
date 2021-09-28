@@ -165,6 +165,13 @@ def get_top_down_map(env, traj):
     init_pos = env.scene.world_to_map(env.task.initial_pos[:2])
     goal_pos = env.scene.world_to_map(env.task.target_pos[:2])
     shortest_path = [env.scene.world_to_map(p) for p in env.task.shortest_path]
+
+    pedestrian_waypoints = []
+    if hasattr(env.task, "pedestrian_waypoints"):
+        pedestrian_waypoints = []
+        for waypoints in env.task.pedestrian_waypoints:
+            pedestrian_waypoints.append([env.scene.world_to_map(p) for p in waypoints])
+
     traj = [env.scene.world_to_map(p[:2]) for p in traj]
     current_pos = env.scene.world_to_map(env.robots[0].get_position()[:2])
     current_angle = env.robots[0].get_rpy()[-1]
@@ -172,6 +179,9 @@ def get_top_down_map(env, traj):
     top_down_map = draw_circle(top_down_map, init_pos, (255, 0, 0), 3)
     top_down_map = draw_circle(top_down_map, goal_pos, (0, 255, 0), 3)
     top_down_map = draw_path(top_down_map, shortest_path, (255, 0, 0), 1)
+    if len(pedestrian_waypoints) > 0:
+        for waypoints in pedestrian_waypoints:
+            top_down_map = draw_path(top_down_map, waypoints, (255, 0, 255), 1)
     top_down_map = draw_path(top_down_map, traj, (0, 0, 255), 1)
 
     top_down_map = draw_agent(
