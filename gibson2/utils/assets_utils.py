@@ -38,6 +38,20 @@ def get_ig_scene_path(scene_name):
     return os.path.join(ig_scenes_path, scene_name)
 
 
+def get_ig_challenge_scene_path(scene_name):
+    """
+    Get iGibson scene path
+
+    :param scene_name: scene name
+    :return: file path to the scene name
+    """
+    ig_challenge_dataset_path = gibson2.ig_challenge_dataset_path
+    ig_challenge_scenes_path = ig_challenge_dataset_path + "/scenes"
+    assert scene_name in os.listdir(
+        ig_challenge_scenes_path), "Scene {} does not exist".format(scene_name)
+    return os.path.join(ig_challenge_scenes_path, scene_name)
+
+
 def get_3dfront_scene_path(scene_name):
     """
     Get 3D-FRONT scene path

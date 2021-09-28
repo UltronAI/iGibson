@@ -28,6 +28,12 @@ else:
     ig_dataset_path = global_config['ig_dataset_path']
 ig_dataset_path = os.path.expanduser(ig_dataset_path)
 
+if 'IGIBSON_CHALLENGE_DATASET_PATH' in os.environ:
+    ig_challenge_dataset_path = os.environ['IGIBSON_CHALLENGE_DATASET_PATH']
+else:
+    ig_challenge_dataset_path = global_config['ig_challenge_dataset_path']
+ig_challenge_dataset_path = os.path.expanduser(ig_challenge_dataset_path)
+
 if '3DFRONT_DATASET_PATH' in os.environ:
     threedfront_dataset_path = os.environ['3DFRONT_DATASET_PATH']
 else:
@@ -48,6 +54,8 @@ if not os.path.isabs(g_dataset_path):
     g_dataset_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), g_dataset_path)
 if not os.path.isabs(ig_dataset_path):
     ig_dataset_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), ig_dataset_path)
+if not os.path.isabs(ig_challenge_dataset_path):
+    ig_challenge_dataset_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), ig_challenge_dataset_path)
 if not os.path.isabs(threedfront_dataset_path):
     threedfront_dataset_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), threedfront_dataset_path)
 if not os.path.isabs(cubicasa_dataset_path):
@@ -57,6 +65,7 @@ logging.info('Importing iGibson (gibson2 module)')
 logging.info('Assets path: {}'.format(assets_path))
 logging.info('Gibson Dataset path: {}'.format(g_dataset_path))
 logging.info('iG Dataset path: {}'.format(ig_dataset_path))
+logging.info('iG Challenge Dataset path: {}'.format(ig_challenge_dataset_path))
 logging.info('3D-FRONT Dataset path: {}'.format(threedfront_dataset_path))
 logging.info('CubiCasa5K Dataset path: {}'.format(cubicasa_dataset_path))
 

@@ -76,7 +76,14 @@ class IndoorScene(Scene):
             if self.trav_map_type == 'with_obj':
                 trav_map_x_path = os.path.join(maps_path, f'floor_trav_{floor}_x.png')
                 trav_map_path = os.path.join(maps_path, f'floor_trav_{floor}.png')
-                if os.path.exists(trav_map_x_path):
+                trav_map_challenge_path = os.path.join(maps_path, f'floor_trav_{floor}_new.png')
+                if self.scene_source == "IG_CHALLENGE":
+                    print(f"loading trav_map from {trav_map_challenge_path}")
+                    trav_map = np.array(Image.open(trav_map_challenge_path))
+                    # self.trav_map_default_resolution = 0.1
+                    # self.trav_map_erosion = 6
+                    manual_map = False
+                elif os.path.exists(trav_map_x_path):
                     print(f"loading trav_map from {trav_map_x_path}")
                     trav_map = np.array(Image.open(trav_map_x_path))
                     manual_map = True
@@ -110,7 +117,8 @@ class IndoorScene(Scene):
                 self.trav_map_size = int(self.trav_map_original_size *
                                          self.trav_map_default_resolution /
                                          self.trav_map_resolution)
-            trav_map[obstacle_map == 0] = 0
+            if not self.scene_source == "IG_CHALLENGE":
+                trav_map[obstacle_map == 0] = 0
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
             trav_map = cv2.erode(trav_map, np.ones(

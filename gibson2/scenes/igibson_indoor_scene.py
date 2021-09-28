@@ -10,10 +10,10 @@ import xml.etree.ElementTree as ET
 from gibson2.scenes.gibson_indoor_scene import StaticIndoorScene
 import random
 import json
-from gibson2.utils.assets_utils import get_ig_scene_path, get_ig_model_path, get_ig_category_path, get_ig_category_ids, get_cubicasa_scene_path, get_3dfront_scene_path
+from gibson2.utils.assets_utils import get_ig_scene_path, get_ig_challenge_scene_path, get_ig_model_path, get_ig_category_path, get_ig_category_ids, get_cubicasa_scene_path, get_3dfront_scene_path
 from PIL import Image
 
-SCENE_SOURCE = ['IG', 'CUBICASA', 'THREEDFRONT']
+SCENE_SOURCE = ['IG', 'CUBICASA', 'THREEDFRONT', 'IG_CHALLENGE']
 
 
 class InteractiveIndoorScene(StaticIndoorScene):
@@ -97,6 +97,8 @@ class InteractiveIndoorScene(StaticIndoorScene):
                 'Unsupported scene source: {}'.format(scene_source))
         if scene_source == "IG":
             scene_dir = get_ig_scene_path(scene_id)
+        elif scene_source == "IG_CHALLENGE":
+            scene_dir = get_ig_challenge_scene_path(scene_id)
         elif scene_source == "CUBICASA":
             scene_dir = get_cubicasa_scene_path(scene_id)
         else:
