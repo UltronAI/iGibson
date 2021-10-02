@@ -123,12 +123,13 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         self.offline_eval = self.config.get(
             'load_scene_episode_config', False)
+        self.offline_eval_socialnav = self.offline_eval and env.config['task'] == "social_nav_random"
         scene_episode_config_path = self.config.get(
             'scene_episode_config_name', None)
         # Sanity check when loading our pre-sampled episodes
         # Make sure the task simulation configuration does not conflict
         # with the configuration used to sample our episode
-        if self.offline_eval:
+        if self.offline_eval_socialnav:
             print(f"load offline episode config from {scene_episode_config_path}")
             path = scene_episode_config_path
             self.episode_config = \
@@ -143,9 +144,12 @@ class SocialNavRandomTask(PointNavRandomTask):
             if self.orca_radius != self.episode_config.orca_radius:
                 print("value of orca_radius: {}".format(
                       self.episode_config.orca_radius))
-                raise ValueError("The orca radius set for the simulation is {}, which is different from "
-                                 "the orca radius used to collect the pedestrians' initial position "
-                                 " for our samples.".format(self.orca_radius))
+                # raise ValueError("The orca radius set for the simulation is {}, which is different from "
+                #                  "the orca radius used to collect the pedestrians' initial position "
+                #                  " for our samples.".format(self.orca_radius))
+                print("The orca radius set for the simulation is {}, which is different from".format(self.orca_radius),
+                      "the orca radius used to collect the pedestrians' initial position",
+                      "for our samples.")
 
             self.number_of_episodes = self.episode_config.num_episodes
             self.episode_index = self.episode_config.episode_index
@@ -256,7 +260,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         """
         self.pedestrian_waypoints = []
         for ped_id, (ped, orca_ped) in enumerate(zip(self.pedestrians, self.orca_pedestrians)):
-            if self.offline_eval:
+            if self.offline_eval_socialnav:
                 episode_index = self.episode_config.episode_index
                 initial_pos = np.array(
                     self.episode_config.episodes[episode_index]['pedestrians'][ped_id]['initial_pos'])
@@ -281,15 +285,15 @@ class SocialNavRandomTask(PointNavRandomTask):
         :param env: environment instance
         """
         super(SocialNavRandomTask, self).reset_agent(env)
-        if self.offline_eval:
+        if self.offline_eval_socialnav:
             self.episode_config.reset_episode()
-            episode_index = self.episode_config.episode_index
+            self.episode_index = self.episode_config.episode_index
             initial_pos = np.array(
-                self.episode_config.episodes[episode_index]['initial_pos'])
+                self.episode_config.episodes[self.episode_index]['initial_pos'])
             initial_orn = np.array(
-                self.episode_config.episodes[episode_index]['initial_orn'])
+                self.episode_config.episodes[self.episode_index]['initial_orn'])
             target_pos = np.array(
-                self.episode_config.episodes[episode_index]['target_pos'])
+                self.episode_config.episodes[self.episode_index]['target_pos'])
             self.initial_pos = initial_pos
             self.target_pos = target_pos
             env.robots[0].set_position_orientation(initial_pos, initial_orn)
@@ -314,7 +318,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         """
 
         while True:
-            if self.offline_eval:
+            if self.offline_eval_socialnav:
                 if ped_id is None:
                     raise ValueError(
                         "The id of the pedestrian to get the goal position was not specified")
@@ -398,7 +402,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             # if the pedestrian has stopped for self.num_steps_stop_thresh steps
             if len(waypoints) == 0 or \
                     self.num_steps_stop[i] >= self.num_steps_stop_thresh:
-                if self.offline_eval:
+                if self.offline_eval_socialnav:
                     waypoints = self.sample_new_target_pos(env, current_pos, i)
                 else:
                     waypoints = self.sample_new_target_pos(env, current_pos)
@@ -549,7 +553,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         if done:
             info['psc'] = 1.0 - (self.personal_space_violation_steps /
                                  env.config.get('max_step', 500))
-            if self.offline_eval:
+            if self.offline_eval_socialnav:
                 episode_index = self.episode_config.episode_index
                 orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
                 info['stl'] = float(info['success']) * \
@@ -559,5 +563,6 @@ class SocialNavRandomTask(PointNavRandomTask):
         else:
             info['psc'] = 0.0
             info['stl'] = 0.0
+        info['sns'] = (info['psc'] + info['stl']) / 2.
         info['num_pedestrians'] = self.num_pedestrians
         return done, info

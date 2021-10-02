@@ -74,30 +74,30 @@ class IndoorScene(Scene):
         self.floor_graph = []
         for floor in range(len(self.floor_heights)):
             if self.trav_map_type == 'with_obj':
-                trav_map_x_path = os.path.join(maps_path, f'floor_trav_{floor}_x.png')
+                if hasattr(self, "not_load_object_categories") and self.not_load_object_categories is not None:
+                    load_x_map = True
+                    not_loaded = "-".join(self.not_load_object_categories)
+                    trav_map_x_path = os.path.join(maps_path, f'floor_trav_{floor}_{not_loaded}.png')
+                else:
+                    load_x_map = False
                 trav_map_path = os.path.join(maps_path, f'floor_trav_{floor}.png')
                 trav_map_challenge_path = os.path.join(maps_path, f'floor_trav_{floor}_new.png')
                 if self.scene_source == "IG_CHALLENGE":
                     print(f"loading trav_map from {trav_map_challenge_path}")
                     trav_map = np.array(Image.open(trav_map_challenge_path))
-                    # self.trav_map_default_resolution = 0.1
-                    # self.trav_map_erosion = 6
-                    manual_map = False
-                elif os.path.exists(trav_map_x_path):
+                elif load_x_map:
                     print(f"loading trav_map from {trav_map_x_path}")
                     trav_map = np.array(Image.open(trav_map_x_path))
-                    manual_map = True
                 else:
                     print(f"loading trav_map from {trav_map_path}")
                     trav_map = np.array(Image.open(trav_map_path))
-                    manual_map = False
 
-                obstacle_map_x_path = os.path.join(maps_path, f'floor_{floor}_nodoor.png')
-                obstacle_map_path = os.path.join(maps_path, f'floor_{floor}.png')
-                if manual_map:
+                if load_x_map:
+                    obstacle_map_x_path = os.path.join(maps_path, f'floor_{floor}_{not_loaded}.png')
                     print(f"loading obstacle_map from {obstacle_map_x_path}")
                     obstacle_map = np.array(Image.open(obstacle_map_x_path))
                 else:
+                    obstacle_map_path = os.path.join(maps_path, f'floor_{floor}.png')
                     print(f"loading obstacle_map from {obstacle_map_path}")
                     obstacle_map = np.array(Image.open(obstacle_map_path))
             else:

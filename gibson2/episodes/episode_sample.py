@@ -107,7 +107,7 @@ class SocialNavEpisodesConfig(EpisodeConfig):
 
         return episode_config
 
-    def save_scene_episodes(self, filename):
+    def save_scene_episodes(self, filename, split, postfix=None):
         """
         Saves the scene episode to a .json file at path ./data/{scene_id}/{filename}
         :param filename: file name
@@ -117,7 +117,9 @@ class SocialNavEpisodesConfig(EpisodeConfig):
         """
         dir_path = os.path.join(
             os.path.dirname(gibson2.__file__),
-            'episodes', 'data', 'social_nav')
+            'episodes', 'data', 'social_nav' if postfix is None else 'social_nav' + '_' + postfix, split)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         path = os.path.join(dir_path, filename)
 
         save_dict = {}
@@ -180,7 +182,7 @@ class InteractiveNavEpisodesConfig(EpisodeConfig):
 
         return episode_config
 
-    def save_scene_episodes(self, filename):
+    def save_scene_episodes(self, filename, split, postfix=None):
         """
         Saves the scene episode to a .json file at path ./data/{scene_id}/{filename}
         :param filename: file name
@@ -190,7 +192,9 @@ class InteractiveNavEpisodesConfig(EpisodeConfig):
         """
         dir_path = os.path.join(
             os.path.dirname(gibson2.__file__),
-            'episodes', 'data', 'interactive_nav')
+            'episodes', 'data', 'interactive_nav' if postfix is None else 'interactive_nav' + '_' + postfix, split)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
         path = os.path.join(dir_path, filename)
 

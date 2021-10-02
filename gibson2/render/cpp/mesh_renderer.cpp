@@ -916,7 +916,7 @@ GLuint MeshRendererContext::compileShader(const std::string &filename, GLenum ty
     }
     const GLchar *srcBufferPtr = src.c_str();
 
-    std::printf("Compiling GLSL shader: %s\n", filename.c_str());
+    // std::printf("Compiling GLSL shader: %s\n", filename.c_str());
 
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &srcBufferPtr, nullptr);

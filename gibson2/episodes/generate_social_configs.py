@@ -24,6 +24,13 @@ if __name__ == '__main__':
         '-c',
         help='which config file to use [default: use yaml files in /configs]',
         required=True)
+    parser.add_argument(
+        '--postfix',
+        required=True)
+    parser.add_argument(
+        '--splits',
+        type=str, nargs="+", default=[]
+    )
 
     args = parser.parse_args()
     episode_config = parse_config(args.config)
@@ -36,22 +43,22 @@ if __name__ == '__main__':
     num_episodes = episode_config.get('num_episodes', 100)
     numpy_seed = episode_config.get('numpy_seed', 0)
     episode_length = SocialNavEpisodesConfig.MAX_EPISODE_LENGTH
-    raw_num_episodes = num_episodes * 5
+    raw_num_episodes = num_episodes * 10
 
     dataset_split = {
         # 'minival': ['Rs_int'],
-        # 'train': ['Merom_0_int', 'Benevolence_0_int', 'Pomaria_0_int',
-        #           'Wainscott_1_int', 'Rs_int', 'Ihlen_0_int',
-        #           'Beechwood_1_int', 'Ihlen_1_int'],
-        # 'dev':  ['Benevolence_1_int', 'Wainscott_0_int'],
-        # 'test': ['Pomaria_2_int', 'Benevolence_2_int']#, 
-        # 'test': ['Beechwood_0_int']
-        'test': ['Pomaria_1_int', 'Merom_1_int']
+        # 'train':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
+        'train':   ['Ihlen_1_int', 'Merom_0_int', 'Pomaria_0_int', 'Rs_int',
+                    'Wainscott_1_int'],
+        'dev':     ['Benevolence_1_int', 'Wainscott_0_int'],
+        'test':    ['Beechwood_0_int', 'Benevolence_2_int', 'Merom_1_int',
+                    'Pomaria_1_int', 'Pomaria_2_int'],
     }
 
-    for split in dataset_split:
+    for split in args.splits:
         for scene_id in dataset_split[split]:
-            file_name = os.path.join(split, '{}.json'.format(scene_id))
+            # file_name = os.path.join(split, '{}.json'.format(scene_id))
+            file_name = '{}.json'.format(scene_id)
 
             env_config['load_scene_episode_config'] = False
             env_config['scene_episode_config_name'] = None
@@ -95,7 +102,7 @@ if __name__ == '__main__':
             env.close()
 
             # Save episodeConfig object with 3x the episodes needed
-            path = episode_config.save_scene_episodes(file_name)
+            path = episode_config.save_scene_episodes(file_name, split, args.postfix)
 
             # Load these episodes one by one and filter in only episodes
             # in which the ORCA agent that represents the robot
@@ -161,4 +168,4 @@ if __name__ == '__main__':
             episode_config.num_episodes = num_episodes
 
             # Overwrite the original episode file
-            path = episode_config.save_scene_episodes(file_name)
+            path = episode_config.save_scene_episodes(file_name, split, args.postfix)

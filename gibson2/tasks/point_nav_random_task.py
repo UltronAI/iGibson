@@ -19,12 +19,12 @@ class PointNavRandomTask(PointNavFixedTask):
 
         self.offline_eval = self.config.get(
             'load_scene_episode_config', False)
-        self.offline_eval_here = self.offline_eval and env.config['task'] == "PointNavRandomTask"
-        print("PointNavRandomTask", self.offline_eval_here)
+        self.offline_eval_pointnav = self.offline_eval and env.config['task'] == "point_nav_random"
+        print("eval PointNavRandomTask", self.offline_eval_pointnav)
         scene_episode_config_path = self.config.get(
             'scene_episode_config_name', None)
 
-        if self.offline_eval_here:
+        if self.offline_eval_pointnav:
             path = scene_episode_config_path
             self.episode_config = \
                 PointNavEpisodesConfig.load_scene_episode_config(path)
@@ -34,9 +34,6 @@ class PointNavRandomTask(PointNavFixedTask):
                     env.scene.scene_id))
             self.number_of_episodes = self.episode_config.num_episodes
             self.episode_index = self.episode_config.episode_index
-        else:
-            self.number_of_episodes = -1
-            self.episode_index = -1
 
     def sample_initial_pose_and_target_pos(self, env):
         """
@@ -107,7 +104,7 @@ class PointNavRandomTask(PointNavFixedTask):
 
         super(PointNavRandomTask, self).reset_agent(env)
 
-        if self.offline_eval_here:
+        if self.offline_eval_pointnav:
             self.episode_config.reset_episode()
             self.episode_index = self.episode_config.episode_index
             print(f"load initial pose and target position for episode {self.episode_index} ...")
@@ -133,5 +130,3 @@ class PointNavRandomTask(PointNavFixedTask):
                 dist = l2_distance(initial_pos, target_pos)
             self.distance_to_goal = dist
             self.shortest_path, _ = self.get_shortest_path(env, True, True)
-        else:
-            self.episode_index += 1

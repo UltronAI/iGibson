@@ -13,6 +13,8 @@ class BaseTask():
         self.reward_functions = []
         self.termination_conditions = []
         self.task_obs_dim = self.config.get('task_obs_dim', 0)
+        self.number_of_episodes = -1
+        self.episode_index = -1
 
     @abstractmethod
     def reset_scene(self, env):
