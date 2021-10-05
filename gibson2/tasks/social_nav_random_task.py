@@ -10,6 +10,8 @@ import pybullet as p
 import numpy as np
 import rvo2
 
+# FIXME:
+# 1. fix pedestrian moving
 
 class SocialNavRandomTask(PointNavRandomTask):
     """
@@ -300,9 +302,10 @@ class SocialNavRandomTask(PointNavRandomTask):
             target_pos = np.array(
                 self.episode_config.episodes[self.episode_index]['target_pos'])
             self.initial_pos = initial_pos
+            self.initial_orn = initial_orn
             self.target_pos = target_pos
             env.robots[0].set_position_orientation(initial_pos, initial_orn)
-            self.shortest_path, _ = self.get_shortest_path(env, True, True)
+            self.shortest_path, self.distance_to_goal = self.get_shortest_path(env, True, True)
 
         self.orca_sim.setAgentPosition(self.robot_orca_ped,
                                        tuple(self.initial_pos[0:2]))
@@ -422,7 +425,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             ped.set_yaw(yaw)
             desired_vel = next_goal - current_pos[0:2]
             desired_vel = desired_vel / \
-                (np.linalg.norm(desired_vel) * self.orca_max_speed + 1e-5)
+                np.linalg.norm(desired_vel) * self.orca_max_speed
             self.orca_sim.setAgentPrefVelocity(orca_ped, tuple(desired_vel))
 
         self.orca_sim.doStep()
@@ -493,6 +496,9 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         return next_peds_pos_xyz, next_peds_stop_flag
 
+    def get_pedestrians_pos(self):
+        return [ped.get_position() for ped in self.pedestrians]
+
     def stop_neighbor_pedestrians(self, id, peds_stop_flags, peds_next_pos_xyz):
         """
         If the pedestrian whose instance stored in self.pedestrians with
@@ -546,7 +552,7 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         next_normalized_dir = next_dir / np.linalg.norm(next_dir)
 
-        angle = np.arccos(np.clip(np.dot(normalized_dir, next_normalized_dir), -1., 1.))
+        angle = np.arccos(np.dot(normalized_dir, next_normalized_dir))
         return angle >= self.backoff_radian_thresh
 
     def get_termination(self, env, collision_links=[], action=None, info={}):

@@ -7,6 +7,9 @@ import gibson2
 from gibson2.episodes.episode_sample import InteractiveNavEpisodesConfig
 from gibson2.utils.constants import SemanticClass
 
+# TODO: 
+# 1. read this file
+# 2. merge this task into social nav
 
 class InteractiveNavRandomTask(PointNavRandomTask):
     """
