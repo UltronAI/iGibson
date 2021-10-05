@@ -12,7 +12,8 @@ class SemanticClass(IntEnum):
     BACKGROUND = 0
     ROBOTS = 1
     USER_ADDED_OBJS = 2
-    SCENE_OBJS = 3
+    USER_ADDED_PEDESTRIANS = 3
+    SCENE_OBJS = 4
 
 
 class ShadowPass(IntEnum):

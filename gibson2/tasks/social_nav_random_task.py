@@ -4,6 +4,7 @@ from gibson2.objects.visual_marker import VisualMarker
 from gibson2.objects.pedestrian import Pedestrian
 from gibson2.termination_conditions.pedestrian_collision import PedestrianCollision
 from gibson2.utils.utils import l2_distance
+from gibson2.utils.constants import SemanticClass
 
 import pybullet as p
 import numpy as np
@@ -135,8 +136,12 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.episode_config = \
                 SocialNavEpisodesConfig.load_scene_episode_config(path)
             if self.num_pedestrians != self.episode_config.num_pedestrians:
-                raise ValueError("The episode samples did not record records for more than {} pedestrians, but got {}".format(
-                    self.num_pedestrians, self.episode_config.num_pedestrians))
+                assert self.num_pedestrians >= self.episode_config.num_pedestrians
+                # raise ValueError("The episode samples did not record records for more than {} pedestrians, but got {}".format(
+                #     self.num_pedestrians, self.episode_config.num_pedestrians))
+                print("The episode samples did not record records for more than {} pedestrians, but got {}".format(
+                        self.num_pedestrians, self.episode_config.num_pedestrians))
+                self.num_pedestrians = self.episode_config.num_pedestrians
             if env.scene.scene_id != self.episode_config.scene_id:
                 raise ValueError("The scene to run the simulation in is '{}' from the " " \
                                 scene used to collect the episode samples".format(
@@ -166,7 +171,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         orca_pedestrians = []
         for i in range(self.num_pedestrians):
             ped = Pedestrian(style=(i % 3))
-            env.simulator.import_object(ped)
+            env.simulator.import_object(ped, class_id=SemanticClass.USER_ADDED_PEDESTRIANS)
             pedestrians.append(ped)
             orca_ped = self.orca_sim.addAgent((0, 0))
             orca_pedestrians.append(orca_ped)
@@ -187,7 +192,7 @@ class SocialNavRandomTask(PointNavRandomTask):
                 radius=0.3,
                 length=0.2,
                 initial_offset=[0, 0, 0.2 / 2])
-            env.simulator.import_object(ped_goal)
+            env.simulator.import_object(ped_goal, class_id=SemanticClass.USER_ADDED_PEDESTRIANS)
             pedestrian_goals.append(ped_goal)
         return pedestrian_goals
 

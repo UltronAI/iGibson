@@ -5,6 +5,7 @@ import numpy as np
 import os
 import gibson2
 from gibson2.episodes.episode_sample import InteractiveNavEpisodesConfig
+from gibson2.utils.constants import SemanticClass
 
 
 class InteractiveNavRandomTask(PointNavRandomTask):
@@ -69,7 +70,7 @@ class InteractiveNavRandomTask(PointNavRandomTask):
             obj_dir = os.path.join(clutter_obj_dir, obj_inst_name)
             obj_path = os.path.join(obj_dir, '{}.urdf'.format(obj_inst_name))
             obj = ArticulatedObject(obj_path)
-            env.simulator.import_object(obj)
+            env.simulator.import_object(obj, class_id=SemanticClass.USER_ADDED_OBJS)
             interactive_objects.append(obj)
         return interactive_objects
 

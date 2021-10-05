@@ -43,16 +43,15 @@ if __name__ == '__main__':
     num_episodes = episode_config.get('num_episodes', 100)
     numpy_seed = episode_config.get('numpy_seed', 0)
     episode_length = SocialNavEpisodesConfig.MAX_EPISODE_LENGTH
-    raw_num_episodes = num_episodes * 10
+    raw_num_episodes = num_episodes * 8
 
     dataset_split = {
-        # 'minival': ['Rs_int'],
-        # 'train':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
-        'train':   ['Ihlen_1_int', 'Merom_0_int', 'Pomaria_0_int', 'Rs_int',
-                    'Wainscott_1_int'],
         'dev':     ['Benevolence_1_int', 'Wainscott_0_int'],
         'test':    ['Beechwood_0_int', 'Benevolence_2_int', 'Merom_1_int',
                     'Pomaria_1_int', 'Pomaria_2_int'],
+        'train':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
+                    'Ihlen_1_int', 'Merom_0_int', 'Pomaria_0_int', 'Rs_int',
+                    'Wainscott_1_int'],
     }
 
     for split in args.splits:
@@ -110,7 +109,13 @@ if __name__ == '__main__':
             env_config['load_scene_episode_config'] = True
             env_config['scene_episode_config_name'] = os.path.join(
                 os.path.dirname(gibson2.__file__),
-                'episodes', 'data', 'social_nav', file_name)
+                'episodes', 
+                'data', 
+                'social_nav' if args.postfix is None else 'social_nav' + '_' + args.postfix, 
+                split,
+                file_name
+            )
+                # 'episodes', 'data', 'social_nav', file_name)
             env = iGibsonEnv(config_file=env_config,
                              mode='headless',
                              action_timestep=1.0 / 10.0,

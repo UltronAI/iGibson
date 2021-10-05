@@ -85,6 +85,7 @@ class IndoorScene(Scene):
                 if self.scene_source == "IG_CHALLENGE":
                     print(f"loading trav_map from {trav_map_challenge_path}")
                     trav_map = np.array(Image.open(trav_map_challenge_path))
+                    load_x_map = False
                 elif load_x_map:
                     print(f"loading trav_map from {trav_map_x_path}")
                     trav_map = np.array(Image.open(trav_map_x_path))
