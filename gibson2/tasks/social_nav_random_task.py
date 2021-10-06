@@ -5,6 +5,8 @@ from gibson2.objects.pedestrian import Pedestrian
 from gibson2.termination_conditions.pedestrian_collision import PedestrianCollision
 from gibson2.utils.utils import l2_distance
 from gibson2.utils.constants import SemanticClass
+from gibson2.reward_functions.pedestrian_collision_reward import PedestrianCollisionReward
+from gibson2.reward_functions.personal_space_violation_reward import PersonalSpaceViolationReward
 
 import pybullet as p
 import numpy as np
@@ -21,6 +23,8 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         # Detect pedestrian collision
         self.termination_conditions.append(PedestrianCollision(self.config))
+        self.reward_functions.append(PedestrianCollisionReward(self.config))
+        self.reward_functions.append(PersonalSpaceViolationReward(self.config))
 
         # Decide on how many pedestrians to load based on scene size
         # Each pixel is 0.01 square meter
@@ -462,9 +466,15 @@ class SocialNavRandomTask(PointNavRandomTask):
         robot_pos = env.robots[0].get_position()[:2]
         for ped in self.pedestrians:
             ped_pos = ped.get_position()[:2]
-            if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+            _, geo_dist = env.scene.get_shortest_path(
+                    self.floor_num,
+                    robot_pos[:2], ped_pos[:2], entire_path=False)
+            if geo_dist < self.personal_space_violation_threshold:
                 personal_space_violation = True
                 break
+            # if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+            #     personal_space_violation = True
+            #     break
         if personal_space_violation:
             self.personal_space_violation_steps += 1
 
