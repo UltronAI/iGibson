@@ -10,14 +10,14 @@ import pybullet as p
 import numpy as np
 import rvo2
 
-class SocialNavRandomTask(PointNavRandomTask):
+class InteractiveSocialNavRandomTask(PointNavRandomTask):
     """
     Social Navigation Random Task
     The goal is to navigate to a random goal position, in the presence of pedestrians
     """
 
     def __init__(self, env):
-        super(SocialNavRandomTask, self).__init__(env)
+        super(InteractiveSocialNavRandomTask, self).__init__(env)
 
         # Detect pedestrian collision
         self.termination_conditions.append(PedestrianCollision(self.config))
@@ -26,14 +26,12 @@ class SocialNavRandomTask(PointNavRandomTask):
         # Each pixel is 0.01 square meter
         num_sqrt_meter = env.scene.floor_map[0].nonzero()[0].shape[0] / 100.0
         self.num_sqrt_meter_per_ped = self.config.get(
-            'num_sqrt_meter_per_ped', 5)
+            'num_sqrt_meter_per_ped', 8)
         self.num_pedestrians = min(10, max(1, int(
             num_sqrt_meter / self.num_sqrt_meter_per_ped)))
 
         self.not_avoid_robot = self.config.get(
             'not_avoid_robot', False)
-        self.personal_space_violation_threshold = self.config.get(
-            'personal_space_violation_threshold', 0.5)
 
         """
         Parameters for our mechanism of preventing pedestrians to back up.
@@ -128,6 +126,7 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         self.offline_eval = self.config.get(
             'load_scene_episode_config', False)
+        self.offline_eval_socialnav = self.offline_eval and env.config['task'] == "social_nav_random"
         scene_episode_config_path = self.config.get(
             'scene_episode_config_name', None)
         # Sanity check when loading our pre-sampled episodes
@@ -152,12 +151,12 @@ class SocialNavRandomTask(PointNavRandomTask):
             if self.orca_radius != self.episode_config.orca_radius:
                 print("value of orca_radius: {}".format(
                       self.episode_config.orca_radius))
-                raise ValueError("The orca radius set for the simulation is {}, which is different from "
-                                 "the orca radius used to collect the pedestrians' initial position "
-                                 " for our samples.".format(self.orca_radius))
-                # print("The orca radius set for the simulation is {}, which is different from".format(self.orca_radius),
-                #       "the orca radius used to collect the pedestrians' initial position",
-                #       "for our samples.")
+                # raise ValueError("The orca radius set for the simulation is {}, which is different from "
+                #                  "the orca radius used to collect the pedestrians' initial position "
+                #                  " for our samples.".format(self.orca_radius))
+                print("The orca radius set for the simulation is {}, which is different from".format(self.orca_radius),
+                      "the orca radius used to collect the pedestrians' initial position",
+                      "for our samples.")
 
             self.number_of_episodes = self.episode_config.num_episodes
             self.episode_index = self.episode_config.episode_index
@@ -353,7 +352,7 @@ class SocialNavRandomTask(PointNavRandomTask):
                 initial_pos[:2],
                 target_pos[:2],
                 entire_path=True)
-            if len(shortest_path) > 1:
+            if len(shortest_path) > 5:
                 break
         waypoints = list(shortest_path) #self.shortest_path_to_waypoints(shortest_path)
         return waypoints
@@ -462,7 +461,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         robot_pos = env.robots[0].get_position()[:2]
         for ped in self.pedestrians:
             ped_pos = ped.get_position()[:2]
-            if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+            if l2_distance(robot_pos, ped_pos) < self.orca_radius:
                 personal_space_violation = True
                 break
         if personal_space_violation:
@@ -570,7 +569,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         if done:
             info['psc'] = 1.0 - (self.personal_space_violation_steps /
                                  env.config.get('max_step', 500))
-            if self.offline_eval:
+            if self.offline_eval_socialnav:
                 episode_index = self.episode_config.episode_index
                 orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
                 info['stl'] = float(info['success']) * \

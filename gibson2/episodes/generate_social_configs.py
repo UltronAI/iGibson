@@ -12,6 +12,12 @@ import time
 from IPython import embed
 
 
+from path import Path
+from PIL import Image
+from gibson2.utils.visualization import utils as vis_utils
+import cv2
+
+
 if __name__ == '__main__':
     """
     Generates the sample episodes based on the config file provided by the
@@ -46,6 +52,7 @@ if __name__ == '__main__':
     raw_num_episodes = num_episodes * 8
 
     dataset_split = {
+        'minival': ['Rs_int'],
         'dev':     ['Benevolence_1_int', 'Wainscott_0_int'],
         'test':    ['Beechwood_0_int', 'Benevolence_2_int', 'Merom_1_int',
                     'Pomaria_1_int', 'Pomaria_2_int'],
@@ -110,7 +117,7 @@ if __name__ == '__main__':
             env_config['scene_episode_config_name'] = os.path.join(
                 os.path.dirname(gibson2.__file__),
                 'episodes', 
-                'data', 
+                'data-new', 
                 'social_nav' if args.postfix is None else 'social_nav' + '_' + args.postfix, 
                 split,
                 file_name
@@ -123,6 +130,7 @@ if __name__ == '__main__':
             assert env.task.dist_tol > env.task.pedestrian_goal_thresh
             filtered_episodes = []
             for i in range(raw_num_episodes):
+                # print(f"episode {i}")
                 env.task.reset_agent(env)
                 shortest_path, _ = env.scene.get_shortest_path(
                     env.task.floor_num,
@@ -154,6 +162,23 @@ if __name__ == '__main__':
                     # Reached next weypoint
                     if np.linalg.norm(next_goal - np.array(pos)) <= env.task.pedestrian_goal_thresh:
                         waypoints.pop(0)
+
+                    episode_dir = Path("debug")/f"episode_{i:03d}"
+                    episode_dir.mkdir_p()
+                    state = {}
+                    vision_obs = env.sensors['vision'].get_obs(env)
+                    for modality in vision_obs:
+                        state[modality] = vision_obs[modality]
+                    rgb = state['rgb']
+                    topdown_map = vis_utils.get_top_down_map(env)
+                    topdown_map = cv2.resize(
+                        topdown_map, 
+                        (rgb.shape[1], rgb.shape[1]), 
+                        interpolation=cv2.INTER_NEAREST
+                    )
+                    frame = np.concatenate([rgb * 255.0, topdown_map], axis=0)
+                    frame = Image.fromarray(frame.astype(np.uint8))
+                    frame.save("{}/{:03d}.png".format(episode_dir, step))
 
                     # Reached final goal
                     if np.linalg.norm(env.task.target_pos[:2] - np.array(pos)) <= env.task.dist_tol:

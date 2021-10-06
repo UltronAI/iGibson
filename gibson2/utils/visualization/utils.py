@@ -198,7 +198,7 @@ def get_top_down_map(env, traj=[]):
         top_down_map,
         current_pos,
         current_angle,
-        agent_radius_px=3
+        agent_radius_px=4
     )
     return top_down_map
 
