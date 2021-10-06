@@ -33,7 +33,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.not_avoid_robot = self.config.get(
             'not_avoid_robot', False)
         self.personal_space_violation_threshold = self.config.get(
-            'personal_space_violation_threshold', 0.5)
+            'personal_space_violation_threshold', 1.5)
 
         """
         Parameters for our mechanism of preventing pedestrians to back up.
