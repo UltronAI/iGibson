@@ -132,6 +132,8 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         self.offline_eval = self.config.get(
             'load_scene_episode_config', False)
+        self.offline_eval_socialnav = self.offline_eval and env.config['task'] == "social_nav_random"
+        print("eval SocialNavRandomTask", self.offline_eval_socialnav)
         scene_episode_config_path = self.config.get(
             'scene_episode_config_name', None)
         # Sanity check when loading our pre-sampled episodes
@@ -468,7 +470,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             ped_pos = ped.get_position()[:2]
             _, geo_dist = env.scene.get_shortest_path(
                     self.floor_num,
-                    robot_pos[:2], ped_pos[:2], entire_path=False)
+                    np.array(robot_pos[:2]), np.array(ped_pos[:2]), entire_path=False)
             if geo_dist < self.personal_space_violation_threshold:
                 personal_space_violation = True
                 break

@@ -9,15 +9,15 @@ class PedestrianCollisionReward(BaseRewardFunction):
 
     def __init__(self, config):
         super(PedestrianCollisionReward, self).__init__(config)
-        self.pedestrian_collision_reward_weight = self.config.get(
-            'pedestrian_collision_reward_weight', 0.0)
+        self.pedestrian_collision_reward = self.config.get(
+            'pedestrian_collision_reward', 0.0)
         self.pedestrian_collision_threshold = self.config.get(
             'pedestrian_collision_threshold', 0.3)
-        print('pedestrian_collision_reward_weight', self.pedestrian_collision_reward_weight)
+        print('pedestrian_collision_reward', self.pedestrian_collision_reward)
 
     def get_reward(self, task, env):
         """
-        Reward is self.pedestrian_collision_reward_weight if there is collision with pedestrians
+        Reward is self.pedestrian_collision_reward if there is collision with pedestrians
         in the last timestep
 
         :param task: task instance
@@ -30,4 +30,5 @@ class PedestrianCollisionReward(BaseRewardFunction):
             ped_pos = ped.get_position()[:2]
             if l2_distance(robot_pos, ped_pos) < self.pedestrian_collision_threshold:
                 collision_count += 1
-        return collision_count * self.pedestrian_collision_reward_weight
+                break
+        return collision_count * self.pedestrian_collision_reward
