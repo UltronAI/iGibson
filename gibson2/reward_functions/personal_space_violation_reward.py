@@ -14,7 +14,10 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
             'personal_space_violation_reward', 0.0)
         self.personal_space_violation_threshold = self.config.get(
             'personal_space_violation_threshold', 1.5)
+        self.use_increasing_violation_reward = bool(self.config.get(
+            'use_increasing_violation_reward', False))
         print('personal_space_violation_reward', self.personal_space_violation_reward)
+        print('use_increasing_violation_reward', self.use_increasing_violation_reward)
 
     def get_reward(self, task, env):
         """
@@ -29,10 +32,19 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
         robot_pos = env.robots[0].get_position()[:2]
         for ped in task.pedestrians:
             ped_pos = ped.get_position()[:2]
-            _, geo_dist = env.scene.get_shortest_path(
-                    task.floor_num,
-                    np.array(robot_pos[:2]), np.array(ped_pos[:2]), entire_path=False)
-            if geo_dist < self.personal_space_violation_threshold:
-                violation_count += 1
-                break
+            # _, geo_dist = env.scene.get_shortest_path(
+            #         task.floor_num,
+            #         np.array(robot_pos[:2]), np.array(ped_pos[:2]), entire_path=False)
+            # if geo_dist < self.personal_space_violation_threshold:
+            #     violation_count += 1
+            #     break
+            if not self.use_increasing_violation_reward:
+                if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+                    violation_count += 1
+                    break
+            else:
+                d = l2_distance(robot_pos, ped_pos)
+                if d < self.personal_space_violation_threshold:
+                    violation_count += 2 - d / self.personal_space_violation_threshold
+                    break
         return violation_count * self.personal_space_violation_reward

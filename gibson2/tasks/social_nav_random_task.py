@@ -468,15 +468,15 @@ class SocialNavRandomTask(PointNavRandomTask):
         robot_pos = env.robots[0].get_position()[:2]
         for ped in self.pedestrians:
             ped_pos = ped.get_position()[:2]
-            _, geo_dist = env.scene.get_shortest_path(
-                    self.floor_num,
-                    np.array(robot_pos[:2]), np.array(ped_pos[:2]), entire_path=False)
-            if geo_dist < self.personal_space_violation_threshold:
-                personal_space_violation = True
-                break
-            # if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+            # _, geo_dist = env.scene.get_shortest_path(
+            #         self.floor_num,
+            #         np.array(robot_pos[:2]), np.array(ped_pos[:2]), entire_path=False)
+            # if geo_dist < self.personal_space_violation_threshold:
             #     personal_space_violation = True
             #     break
+            if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
+                personal_space_violation = True
+                break
         if personal_space_violation:
             self.personal_space_violation_steps += 1
 
