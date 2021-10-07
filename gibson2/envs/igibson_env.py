@@ -311,7 +311,7 @@ class iGibsonEnv(BaseEnv):
 
         state = self.get_state(collision_links)
         info = {}
-        reward, info = self.task.get_reward(
+        rewards, info = self.task.get_reward(
             self, collision_links, action, info)
         done, info = self.task.get_termination(
             self, collision_links, action, info)
@@ -322,7 +322,7 @@ class iGibsonEnv(BaseEnv):
             info['last_observation'] = state
             state = self.reset()
 
-        return state, reward, done, info
+        return state, rewards, done, info
 
     def check_collision(self, body_id):
         """

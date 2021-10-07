@@ -45,11 +45,12 @@ class BaseTask():
         :return reward: total reward of the current timestep
         :return info: additional info
         """
-        reward = 0.0
+        # reward = 0.0
+        rewards = {}
         for reward_function in self.reward_functions:
-            reward += reward_function.get_reward(self, env)
-
-        return reward, info
+            # reward += reward_function.get_reward(self, env)
+            rewards[reward_function.name] = reward_function.get_reward(self, env)
+        return rewards, info
 
     def get_termination(self, env, collision_links=[], action=None, info={}):
         """

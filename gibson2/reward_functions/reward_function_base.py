@@ -30,3 +30,7 @@ class BaseRewardFunction():
         :return: reward, info
         """
         raise NotImplementedError()
+
+    @property
+    def name(self):
+        return self.__class__.__name__
