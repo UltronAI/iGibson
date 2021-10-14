@@ -592,6 +592,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         else:
             info['psc'] = 0.0
             info['stl'] = 0.0
-        info['sns'] = (info['psc'] + info['stl']) / 2.
+        info['sns'] = (info['psc'] + info['stl'] + info['spl']) / 3.
+        # info['score'] = info['sns']
         info['num_pedestrians'] = self.num_pedestrians
         return done, info

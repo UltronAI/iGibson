@@ -16,8 +16,11 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
             'personal_space_violation_threshold', 1.5)
         self.use_increasing_violation_reward = bool(self.config.get(
             'use_increasing_violation_reward', False))
+        self.use_updated_violation_reward = bool(self.config.get(
+            'use_updated_violation_reward', False))
         print('personal_space_violation_reward', self.personal_space_violation_reward)
         print('use_increasing_violation_reward', self.use_increasing_violation_reward)
+        print('use_updated_violation_reward', self.use_updated_violation_reward)
 
     def get_reward(self, task, env):
         """
@@ -38,7 +41,11 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
             # if geo_dist < self.personal_space_violation_threshold:
             #     violation_count += 1
             #     break
-            if not self.use_increasing_violation_reward:
+            if self.use_updated_violation_reward:
+                d = l2_distance(robot_pos, ped_pos)
+                if d < self.personal_space_violation_threshold:
+                    violation_count += self.personal_space_violation_threshold - d
+            elif not self.use_increasing_violation_reward:
                 if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
                     violation_count += 1
                     break
