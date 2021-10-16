@@ -274,6 +274,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         :param env: environment instance
         """
         self.pedestrian_waypoints = []
+        self.pedestrian_trajectories = []
         for ped_id, (ped, orca_ped) in enumerate(zip(self.pedestrians, self.orca_pedestrians)):
             if self.offline_eval_socialnav:
                 episode_index = self.episode_config.episode_index
@@ -291,6 +292,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             ped.set_position_orientation(initial_pos, initial_orn)
             self.orca_sim.setAgentPosition(orca_ped, tuple(initial_pos[0:2]))
             self.pedestrian_waypoints.append(waypoints)
+            self.pedestrian_trajectories.append([initial_pos])
 
     def reset_agent(self, env):
         """
@@ -463,6 +465,8 @@ class SocialNavRandomTask(PointNavRandomTask):
                         <= self.pedestrian_goal_thresh:
                     waypoints.pop(0)
 
+                self.pedestrian_trajectories[i].append(pos_xyz)
+
         # Detect robot's personal space violation
         personal_space_violation = False
         robot_pos = env.robots[0].get_position()[:2]
@@ -596,3 +600,32 @@ class SocialNavRandomTask(PointNavRandomTask):
         # info['score'] = info['sns']
         info['num_pedestrians'] = self.num_pedestrians
         return done, info
+
+    def get_global_infos(self, env):
+        global_infos = super(SocialNavRandomTask, self).get_global_infos(env)
+
+        pedestrian_pos_map = np.zeros_like(self.trav_map)
+        for ped_pos in self.get_pedestrians_pos():
+            map_xy = env.scene.world_to_map(np.array(ped_pos[:2]))
+            pedestrian_pos_map[map_xy[0], map_xy[1]] = 1.0
+        global_infos["pedestrian_pos"] = self.crop_map(pedestrian_pos_map)
+
+        pedestrian_waypoints_map = np.zeros_like(self.trav_map)
+        for ped_waypoints in self.pedestrian_waypoints:
+            for i, pos_waypoint in enumerate(ped_waypoints):
+                map_xy = env.scene.world_to_map(np.array(pos_waypoint[:2]))
+                pedestrian_waypoints_map[map_xy[0], map_xy[1]] = 1.0 - i / len(ped_waypoints)
+        global_infos["pedestrian_waypoints"] = self.crop_map(pedestrian_waypoints_map)
+
+        pedestrian_trajs_map = np.zeros_like(self.trav_map)
+        for ped_traj in self.pedestrian_trajectories:
+            for i, pos_traj_p in enumerate(ped_traj):
+                map_xy = env.scene.world_to_map(np.array(pos_traj_p[:2]))
+                pedestrian_trajs_map[map_xy[0], map_xy[1]] = (i + 1.0) / len(ped_traj)
+        global_infos["pedestrian_trajs"] = self.crop_map(pedestrian_trajs_map)
+
+        return global_infos
+
+    @property
+    def num_global_infos(self):
+        return super().num_global_infos + 3

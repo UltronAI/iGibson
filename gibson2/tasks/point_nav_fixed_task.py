@@ -45,6 +45,10 @@ class PointNavFixedTask(BaseTask):
         self.goal_format = self.config.get('goal_format', 'polar')
         self.dist_tol = self.termination_conditions[-1].dist_tol
 
+        self.robot_traj = [self.initial_pos[:2]]
+        self.trav_map = env.scene.floor_map[0] / 255.
+        self.valid_area = self.get_valid_area()
+
         self.visual_object_at_initial_target_pos = self.config.get(
             'visual_object_at_initial_target_pos', True
         )
@@ -149,6 +153,7 @@ class PointNavFixedTask(BaseTask):
         env.land(env.robots[0], self.initial_pos, self.initial_orn)
         self.path_length = 0.0
         self.robot_pos = self.initial_pos[:2]
+        self.robot_traj = [self.robot_pos]
         self.geodesic_dist = self.get_geodesic_potential(env)
         self.shortest_path, _ = self.get_shortest_path(env, True, True)
         for reward_function in self.reward_functions:
@@ -266,3 +271,88 @@ class PointNavFixedTask(BaseTask):
         new_robot_pos = env.robots[0].get_position()[:2]
         self.path_length += l2_distance(self.robot_pos, new_robot_pos)
         self.robot_pos = new_robot_pos
+        self.robot_traj.append(self.robot_pos)
+
+    def get_global_infos(self, env):
+        occupancy_map = np.copy(self.trav_map)
+        valid_area = np.copy(self.valid_area)
+
+        goal_pos_map = np.zeros_like(self.trav_map)
+        map_xy = env.scene.world_to_map(self.target_pos[:2])
+        # print("goal_pos", self.target_pos, "->", map_xy)
+        goal_pos_map[map_xy[0], map_xy[1]] = 1.0
+
+        robot_pos_map = np.zeros_like(self.trav_map)
+        map_xy = env.scene.world_to_map(self.robot_pos[:2])
+        # print("robot_pos", self.robot_pos, "->", map_xy)
+        robot_pos_map[map_xy[0], map_xy[1]] = 1.0
+
+        robot_traj_map = np.zeros_like(self.trav_map)
+        for i, pos_t in enumerate(self.robot_traj):
+            map_xy = env.scene.world_to_map(pos_t)
+            # print("pos_t", f"{i}", pos_t, "->", map_xy)
+            robot_traj_map[map_xy[0], map_xy[1]] = (i + 1.0) / len(self.robot_traj)
+
+        shortest_path_map = np.zeros_like(self.trav_map)
+        shorest_path, _ = self.get_shortest_path(env, entire_path=True)
+        for i, pos_s in enumerate(shorest_path):
+            # print("pos_s", f"{i}", pos_s)
+            map_xy = env.scene.world_to_map(pos_s[:2])
+            # print("pos_s", f"{i}", pos_s, "->", map_xy)
+            shortest_path_map[map_xy[0], map_xy[1]] = 1.0 - i / len(shorest_path)
+
+        global_infos = {
+            "occupancy": self.crop_map(occupancy_map),
+            "robot_pos": self.crop_map(robot_pos_map),
+            "robot_traj": self.crop_map(robot_traj_map),
+            "shortest_path": self.crop_map(shortest_path_map),
+            "goal_pos": self.crop_map(goal_pos_map),
+        }
+
+        return global_infos
+
+    def get_valid_area(self):
+        nonzero_y, nonzero_x = self.trav_map.nonzero()
+        x_lower_bound, x_upper_bound = nonzero_x.min(), nonzero_x.max()
+        y_lower_bound, y_upper_bound = nonzero_y.min(), nonzero_y.max()
+
+        x_size = x_upper_bound - x_lower_bound
+        y_size = y_upper_bound - y_lower_bound
+
+        valid_size = 224 #max(x_size, y_size) + 6
+
+        x_lower_padding = (valid_size - x_size) // 2
+        x_upper_padding = (valid_size - x_size) - x_lower_padding
+        y_lower_padding = (valid_size - y_size) // 2
+        y_upper_padding = (valid_size - y_size) - y_lower_padding
+
+        # mask = np.zeros_like(self.trav_map).astype(np.bool)
+        # mask[
+        #     (y_lower_bound - y_padding) : (y_upper_bound + y_padding),
+        #     (x_lower_bound - x_padding) : (x_upper_bound + x_padding),
+        # ] = True
+
+        return np.array([
+            y_lower_bound - y_lower_padding,
+            y_upper_bound + y_upper_padding,
+            x_lower_bound - x_lower_padding,
+            x_upper_bound + x_upper_padding,
+        ])
+
+    def crop_map(self, original_map):
+        row_min, row_max, col_min, col_max = self.valid_area.copy()
+        padding_row_b = abs(min(row_min, 0))
+        padding_row_u = abs(max(row_max - original_map.shape[0], 0))
+        padding_col_b = abs(min(col_min, 0))
+        padding_col_u = abs(max(col_max - original_map.shape[1], 0))
+        new_map = np.pad(
+            original_map,
+            ((padding_row_b, padding_row_u), (padding_col_b, padding_col_u))
+        )
+        return new_map[
+            row_min + padding_row_b: row_max + padding_row_b,
+            col_min + padding_col_b: col_max + padding_col_b,]
+
+    @property
+    def num_global_infos(self):
+        return 5

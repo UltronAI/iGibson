@@ -91,3 +91,13 @@ class BaseTask():
         :param env: environment instance
         """
         return
+
+    @abstractmethod
+    def get_global_infos(self, env):
+        """
+        Get task-specific global infos
+
+        :param env: environment instance
+        :return: task-specific global infos (numpy array)
+        """
+        raise NotImplementedError()
