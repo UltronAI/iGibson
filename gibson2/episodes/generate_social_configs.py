@@ -163,22 +163,22 @@ if __name__ == '__main__':
                     if np.linalg.norm(next_goal - np.array(pos)) <= env.task.pedestrian_goal_thresh:
                         waypoints.pop(0)
 
-                    episode_dir = Path("debug")/f"episode_{i:03d}"
-                    episode_dir.mkdir_p()
-                    state = {}
-                    vision_obs = env.sensors['vision'].get_obs(env)
-                    for modality in vision_obs:
-                        state[modality] = vision_obs[modality]
-                    rgb = state['rgb']
-                    topdown_map = vis_utils.get_top_down_map(env)
-                    topdown_map = cv2.resize(
-                        topdown_map, 
-                        (rgb.shape[1], rgb.shape[1]), 
-                        interpolation=cv2.INTER_NEAREST
-                    )
-                    frame = np.concatenate([rgb * 255.0, topdown_map], axis=0)
-                    frame = Image.fromarray(frame.astype(np.uint8))
-                    frame.save("{}/{:03d}.png".format(episode_dir, step))
+                    # episode_dir = Path("debug")/f"episode_{i:03d}"
+                    # episode_dir.mkdir_p()
+                    # state = {}
+                    # vision_obs = env.sensors['vision'].get_obs(env)
+                    # for modality in vision_obs:
+                    #     state[modality] = vision_obs[modality]
+                    # rgb = state['rgb']
+                    # topdown_map = vis_utils.get_top_down_map(env)
+                    # topdown_map = cv2.resize(
+                    #     topdown_map, 
+                    #     (rgb.shape[1], rgb.shape[1]), 
+                    #     interpolation=cv2.INTER_NEAREST
+                    # )
+                    # frame = np.concatenate([rgb * 255.0, topdown_map], axis=0)
+                    # frame = Image.fromarray(frame.astype(np.uint8))
+                    # frame.save("{}/{:03d}.png".format(episode_dir, step))
 
                     # Reached final goal
                     if np.linalg.norm(env.task.target_pos[:2] - np.array(pos)) <= env.task.dist_tol:

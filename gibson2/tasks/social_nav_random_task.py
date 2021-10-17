@@ -586,6 +586,9 @@ class SocialNavRandomTask(PointNavRandomTask):
         if done:
             info['psc'] = 1.0 - (self.personal_space_violation_steps /
                                  env.config.get('max_step', 500))
+            info['psc_real'] = 1.0 - (self.personal_space_violation_steps /
+                                 env.current_step)
+            info['ps_violation'] = self.personal_space_violation_steps
             if self.offline_eval:
                 episode_index = self.episode_config.episode_index
                 orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
@@ -596,7 +599,9 @@ class SocialNavRandomTask(PointNavRandomTask):
         else:
             info['psc'] = 0.0
             info['stl'] = 0.0
-        info['sns'] = (info['psc'] + info['stl'] + info['spl']) / 3.
+            info['psc_real'] = 0.0
+            info['ps_violation'] = 0.0
+        info['sns'] = (info['psc_real'] + info['stl'] + info['spl']) / 3.
         # info['score'] = info['sns']
         info['num_pedestrians'] = self.num_pedestrians
         return done, info
