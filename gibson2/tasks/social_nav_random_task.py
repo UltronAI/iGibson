@@ -316,6 +316,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.target_pos = target_pos
             env.robots[0].set_position_orientation(initial_pos, initial_orn)
             self.shortest_path, self.distance_to_goal = self.get_shortest_path(env, True, True)
+            self.geodesic_dist = self.distance_to_goal
 
         if not self.not_avoid_robot:
             self.orca_sim.setAgentPosition(self.robot_orca_ped,
@@ -591,7 +592,11 @@ class SocialNavRandomTask(PointNavRandomTask):
             info['ps_violation'] = self.personal_space_violation_steps
             if self.offline_eval:
                 episode_index = self.episode_config.episode_index
-                orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
+                if isinstance(self.episode_config.episodes[episode_index]['orca_timesteps'], int):
+                    orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
+                else:
+                    orca_timesteps = 0
+                # orca_timesteps = self.episode_config.episodes[episode_index]['orca_timesteps']
                 info['stl'] = float(info['success']) * \
                     min(1.0, orca_timesteps / env.current_step)
             else:
