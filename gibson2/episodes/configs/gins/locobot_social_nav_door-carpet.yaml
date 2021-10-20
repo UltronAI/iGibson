@@ -26,7 +26,7 @@ angular_velocity: 1.5707963267948966
 # task
 task: social_nav_random
 target_dist_min: 1.0
-target_dist_max: 10.0
+target_dist_max: 20.0
 goal_format: polar
 task_obs_dim: 4
 waypoint_resolution: 0.1
