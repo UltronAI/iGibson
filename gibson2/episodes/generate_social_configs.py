@@ -117,7 +117,7 @@ if __name__ == '__main__':
             env_config['scene_episode_config_name'] = os.path.join(
                 os.path.dirname(gibson2.__file__),
                 'episodes', 
-                'data-new', 
+                'data', 
                 'social_nav' if args.postfix is None else 'social_nav' + '_' + args.postfix, 
                 split,
                 file_name
@@ -132,7 +132,7 @@ if __name__ == '__main__':
             for i in range(raw_num_episodes):
                 # print(f"episode {i}")
                 env.task.reset_agent(env)
-                shortest_path, _ = env.scene.get_shortest_path(
+                shortest_path, dist_to_goal = env.scene.get_shortest_path(
                     env.task.floor_num,
                     env.task.initial_pos[:2],
                     env.task.target_pos[:2],
@@ -184,8 +184,8 @@ if __name__ == '__main__':
                     if np.linalg.norm(env.task.target_pos[:2] - np.array(pos)) <= env.task.dist_tol:
                         break
 
-                success = (step != (episode_length - 1))
-                print('episode', i, success)
+                success = (step < episode_length)
+                print(f'episode {i}:\tsuccess: {success}\tdist: {dist_to_goal}\tsteps: {step}')
                 if success:
                     episode_config.episodes[i]['orca_timesteps'] = step
                     filtered_episodes.append(episode_config.episodes[i])

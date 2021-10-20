@@ -167,11 +167,6 @@ class PointNavFixedTask(BaseTask):
             env, collision_links, action, info)
 
         info['path_length'] = self.path_length
-        if self.path_length < 1e-3:
-            info['path_efficiency'] = 0.0
-        else:
-            info['path_efficiency'] = min(1.0, self.geodesic_dist / self.path_length)
-
         info['distance_to_goal'] = self.geodesic_dist
         if done:
             info['spl'] = float(info['success']) * \
