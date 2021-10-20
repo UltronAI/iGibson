@@ -55,3 +55,8 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
                     violation_count += 2 - d / self.personal_space_violation_threshold
                     break
         return violation_count * self.personal_space_violation_reward
+
+    def update_weights(self, new_weights):
+        self.personal_space_violation_reward = new_weights.get(
+            'personal_space_violation_reward', self.personal_space_violation_reward
+        )

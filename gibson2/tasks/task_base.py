@@ -101,3 +101,7 @@ class BaseTask():
         :return: task-specific global infos (numpy array)
         """
         raise NotImplementedError()
+
+    def update_reward_weights(self, new_weights):
+        for reward in self.reward_functions:
+            reward.update_weights(new_weights)

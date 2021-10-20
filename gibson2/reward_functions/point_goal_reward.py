@@ -30,3 +30,8 @@ class PointGoalReward(BaseRewardFunction):
             task.target_pos[:2]) < self.dist_tol
         reward = self.success_reward if success else 0.0
         return reward
+
+    def update_weights(self, new_weights):
+        self.success_reward = new_weights.get(
+            'success_reward', self.success_reward
+        )

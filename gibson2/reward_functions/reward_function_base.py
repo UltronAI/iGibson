@@ -31,6 +31,9 @@ class BaseRewardFunction():
         """
         raise NotImplementedError()
 
+    def update_weights(self, weights):
+        raise NotImplementedError
+
     @property
     def name(self):
         return self.__class__.__name__

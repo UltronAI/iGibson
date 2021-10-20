@@ -17,3 +17,8 @@ class SlackReward(BaseRewardFunction):
 
     def get_reward(self, task, env):
         return self.slack_reward
+
+    def update_weights(self, new_weights):
+        self.slack_reward = new_weights.get(
+            'slack_reward', self.slack_reward
+        )

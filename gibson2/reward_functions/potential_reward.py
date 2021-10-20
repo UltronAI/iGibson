@@ -38,3 +38,8 @@ class PotentialReward(BaseRewardFunction):
         reward *= self.potential_reward_weight
         self.potential = new_potential
         return reward
+
+    def update_weights(self, new_weights):
+        self.potential_reward_weight = new_weights.get(
+            'potential_reward_weight', self.potential_reward_weight
+        )

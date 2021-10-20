@@ -32,3 +32,8 @@ class PedestrianCollisionReward(BaseRewardFunction):
                 collision_count += 1
                 break
         return collision_count * self.pedestrian_collision_reward
+
+    def update_weights(self, new_weights):
+        self.pedestrian_collision_reward = new_weights.get(
+            'pedestrian_collision_reward', self.pedestrian_collision_reward
+        )

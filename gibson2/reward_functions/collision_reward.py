@@ -25,3 +25,8 @@ class CollisionReward(BaseRewardFunction):
         """
         has_collision = float(len(env.collision_links) > 0)
         return has_collision * self.collision_reward_weight
+
+    def update_weights(self, new_weights):
+        self.collision_reward_weight = new_weights.get(
+            'collision_reward_weight', self.collision_reward_weight
+        )
