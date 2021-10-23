@@ -117,7 +117,7 @@ if __name__ == '__main__':
             env_config['scene_episode_config_name'] = os.path.join(
                 os.path.dirname(gibson2.__file__),
                 'episodes', 
-                'data', 
+                'data_1-20', 
                 'social_nav' if args.postfix is None else 'social_nav' + '_' + args.postfix, 
                 split,
                 file_name
