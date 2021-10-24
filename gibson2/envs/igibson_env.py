@@ -318,7 +318,7 @@ class iGibsonEnv(BaseEnv):
             self, collision_links, action, info)
         done, info = self.task.get_termination(
             self, collision_links, action, info)
-        self.task.step(self)
+        info = self.task.step(self, info)
         self.populate_info(info)
 
         if done and self.automatic_reset:

@@ -84,13 +84,13 @@ class BaseTask():
         """
         raise NotImplementedError()
 
-    def step(self, env):
+    def step(self, env, info):
         """
         Perform task-specific step for every timestep
 
         :param env: environment instance
         """
-        return
+        return info
 
     @abstractmethod
     def get_global_infos(self, env):

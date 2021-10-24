@@ -3,7 +3,7 @@ from gibson2.tasks.point_nav_random_task import PointNavRandomTask
 from gibson2.objects.visual_marker import VisualMarker
 from gibson2.objects.pedestrian import Pedestrian
 from gibson2.termination_conditions.pedestrian_collision import PedestrianCollision
-from gibson2.utils.utils import l2_distance
+from gibson2.utils.utils import l2_distance, cartesian_to_polar
 from gibson2.utils.constants import SemanticClass
 from gibson2.reward_functions.pedestrian_collision_reward import PedestrianCollisionReward
 from gibson2.reward_functions.personal_space_violation_reward import PersonalSpaceViolationReward
@@ -383,7 +383,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             else:
                 cur_slope = waypoint - prev_waypoint
                 cosine_angle = np.dot(cached_slope, cur_slope) / \
-                    (np.linalg.norm(cached_slope) * np.linalg.norm(cur_slope))
+                    (np.linalg.norm(cached_slope) * np.linalg.norm(cur_slope) + 1e-8)
                 if np.abs(cosine_angle - 1.0) > 1e-3:
                     waypoints.append(valid_waypoint)
                     valid_waypoint = prev_waypoint
@@ -400,18 +400,29 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         return waypoints
 
-    def step(self, env):
+    def step(self, env, info):
         """
         Perform task-specific step: move the pedestrians based on ORCA while
         disallowing backing up
 
         :param env: environment instance
         """
-        super(SocialNavRandomTask, self).step(env)
+        super(SocialNavRandomTask, self).step(env, info)
         if not self.not_avoid_robot:
+            robot_current_pos = env.robots[0].get_position()[0:2]
+            robot_current_rpy = env.robots[0].get_rpy()
             self.orca_sim.setAgentPosition(
                 self.robot_orca_ped,
-                tuple(env.robots[0].get_position()[0:2]))
+                tuple(robot_current_pos))
+
+            shortest_path, _ = self.get_shortest_path(env)
+            waypoints = self.shortest_path_to_waypoints(shortest_path)
+            next_goal = shortest_path[0]
+
+            desired_vel = next_goal - robot_current_pos
+            desired_vel = desired_vel / np.linalg.norm(desired_vel) * 0.5 # robot's max linear velo
+            self.orca_sim.setAgentPrefVelocity(self.robot_orca_ped, tuple(desired_vel))
+            # print("desired vel", desired_vel)
 
         for i, (ped, orca_ped, waypoints) in \
                 enumerate(zip(self.pedestrians,
@@ -442,6 +453,19 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.orca_sim.setAgentPrefVelocity(orca_ped, tuple(desired_vel))
 
         self.orca_sim.doStep()
+
+        if not self.not_avoid_robot:
+            orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
+            orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
+            current_yaw = robot_current_rpy[-1]
+            relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
+            if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
+                target_velo = [1.0, 0.0]
+            elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
+                target_velo = [0.0, 1.0]
+            else:
+                target_velo = [0.0, -1.0]
+            info["orca_velo"] = target_velo
 
         next_peds_pos_xyz, next_peds_stop_flag = \
             self.update_pos_and_stop_flags()
@@ -484,6 +508,8 @@ class SocialNavRandomTask(PointNavRandomTask):
                 break
         if personal_space_violation:
             self.personal_space_violation_steps += 1
+
+        return info
 
     def update_pos_and_stop_flags(self):
         """

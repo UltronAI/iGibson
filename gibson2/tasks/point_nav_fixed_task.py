@@ -256,7 +256,7 @@ class PointNavFixedTask(BaseTask):
                 self.waypoints_vis[i].set_position(
                     pos=np.array([0.0, 0.0, 100.0]))
 
-    def step(self, env):
+    def step(self, env, info):
         """
         Perform task-specific step: step visualization and aggregate path length
 
@@ -267,6 +267,8 @@ class PointNavFixedTask(BaseTask):
         self.path_length += l2_distance(self.robot_pos, new_robot_pos)
         self.robot_pos = new_robot_pos
         self.robot_traj.append(self.robot_pos)
+
+        return info
 
     def get_global_infos(self, env):
         occupancy_map = np.copy(self.trav_map)
