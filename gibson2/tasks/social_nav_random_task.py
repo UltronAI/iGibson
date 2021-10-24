@@ -26,6 +26,9 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.reward_functions.append(PedestrianCollisionReward(self.config))
         self.reward_functions.append(PersonalSpaceViolationReward(self.config))
 
+        self.compute_orca_velo = self.config.get(
+            'compute_orca_velo', False)
+
         # Decide on how many pedestrians to load based on scene size
         # Each pixel is 0.01 square meter
         num_sqrt_meter = env.scene.floor_map[0].nonzero()[0].shape[0] / 100.0
@@ -415,14 +418,15 @@ class SocialNavRandomTask(PointNavRandomTask):
                 self.robot_orca_ped,
                 tuple(robot_current_pos))
 
-            shortest_path, _ = self.get_shortest_path(env)
-            waypoints = self.shortest_path_to_waypoints(shortest_path)
-            next_goal = shortest_path[0]
+            if self.compute_orca_velo:
+                shortest_path, _ = self.get_shortest_path(env)
+                waypoints = self.shortest_path_to_waypoints(shortest_path)
+                next_goal = shortest_path[0]
 
-            desired_vel = next_goal - robot_current_pos
-            desired_vel = desired_vel / np.linalg.norm(desired_vel) * 0.5 # robot's max linear velo
-            self.orca_sim.setAgentPrefVelocity(self.robot_orca_ped, tuple(desired_vel))
-            # print("desired vel", desired_vel)
+                desired_vel = next_goal - robot_current_pos
+                desired_vel = desired_vel / np.linalg.norm(desired_vel) * 0.5 # robot's max linear velo
+                self.orca_sim.setAgentPrefVelocity(self.robot_orca_ped, tuple(desired_vel))
+                # print("desired vel", desired_vel)
 
         for i, (ped, orca_ped, waypoints) in \
                 enumerate(zip(self.pedestrians,
@@ -455,17 +459,20 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.orca_sim.doStep()
 
         if not self.not_avoid_robot:
-            orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
-            orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
-            current_yaw = robot_current_rpy[-1]
-            relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
-            if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
-                target_velo = [1.0, 0.0]
-            elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
-                target_velo = [0.0, 1.0]
+            if self.compute_orca_velo:
+                orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
+                orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
+                current_yaw = robot_current_rpy[-1]
+                relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
+                if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
+                    target_velo = [1.0, 0.0]
+                elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
+                    target_velo = [0.0, 1.0]
+                else:
+                    target_velo = [0.0, -1.0]
+                info["orca_velo"] = target_velo
             else:
-                target_velo = [0.0, -1.0]
-            info["orca_velo"] = target_velo
+                info["orca_velo"] = [0.0, 0.0]
 
         next_peds_pos_xyz, next_peds_stop_flag = \
             self.update_pos_and_stop_flags()
