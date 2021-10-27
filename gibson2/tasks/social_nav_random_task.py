@@ -34,8 +34,12 @@ class SocialNavRandomTask(PointNavRandomTask):
         num_sqrt_meter = env.scene.floor_map[0].nonzero()[0].shape[0] / 100.0
         self.num_sqrt_meter_per_ped = self.config.get(
             'num_sqrt_meter_per_ped', 5)
-        self.num_pedestrians = min(10, max(1, int(
-            num_sqrt_meter / self.num_sqrt_meter_per_ped)))
+        if self.config.get("no_max_limit", False):
+            self.num_pedestrians = max(1, int(
+                num_sqrt_meter / self.num_sqrt_meter_per_ped))
+        else:
+            self.num_pedestrians = min(10, max(1, int(
+                num_sqrt_meter / self.num_sqrt_meter_per_ped)))
 
         self.not_avoid_robot = self.config.get(
             'not_avoid_robot', False)

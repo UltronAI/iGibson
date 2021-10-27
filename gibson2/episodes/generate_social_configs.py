@@ -56,8 +56,13 @@ if __name__ == '__main__':
         'dev':     ['Benevolence_1_int', 'Wainscott_0_int'],
         'test':    ['Beechwood_0_int', 'Benevolence_2_int', 'Merom_1_int',
                     'Pomaria_1_int', 'Pomaria_2_int'],
-        'train':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
-                    'Ihlen_1_int', 'Merom_0_int', 'Pomaria_0_int', 'Rs_int',
+        'train1_3m2':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
+                    'Ihlen_1_int'],
+        'train2_3m2':   ['Merom_0_int', 'Pomaria_0_int', 'Rs_int',
+                    'Wainscott_1_int'],
+        'train1':   ['Beechwood_1_int', 'Benevolence_0_int', 'Ihlen_0_int',
+                    'Ihlen_1_int'],
+        'train2':   ['Merom_0_int', 'Pomaria_0_int', 'Rs_int',
                     'Wainscott_1_int'],
     }
 
@@ -153,7 +158,7 @@ if __name__ == '__main__':
                         env.task.orca_max_speed
                     env.task.orca_sim.setAgentPrefVelocity(
                         env.task.robot_orca_ped, tuple(desired_vel))
-                    env.task.step(env)
+                    env.task.step(env, {})
                     pos = env.task.orca_sim.getAgentPosition(
                         env.task.robot_orca_ped)
                     env.robots[0].set_position(
