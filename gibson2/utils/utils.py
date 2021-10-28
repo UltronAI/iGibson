@@ -131,6 +131,13 @@ def quatXYZWFromRotMat(rot_mat):
     return quatXYZW
 
 
+def angle2rotmat(angle):
+    return np.array([
+        [np.cos(angle), -np.sin(angle)],
+        [np.sin(angle), np.cos(angle)]
+    ])
+
+
 # Quat(wxyz)
 def quat_pos_to_mat(pos, quat):
     """Convert position and quaternion to transformation matrix"""
