@@ -524,17 +524,24 @@ class SocialNavRandomTask(PointNavRandomTask):
             info["ped_map"] = ped_map[..., None]
 
         # Detect robot's personal space violation
-        personal_space_violation = False
+        current_personal_space_violation_flags = [False] * len(self.personal_space_violation_threshold)
+        social_distance_list = []
         robot_pos = env.robots[0].get_position()[:2]
         for ped in self.pedestrians:
+            personal_space_violation = False
             ped_pos = ped.get_position()[:2]
             d_ped_rob = l2_distance(robot_pos, ped_pos)
             for i, psv_threshold in enumerate(self.personal_space_violation_threshold):
                 if d_ped_rob < psv_threshold:
-                    self.personal_space_violation_steps[i] += 1
+                    if not current_personal_space_violation_flags[i]:
+                        current_personal_space_violation_flags[i] = True
+                        self.personal_space_violation_steps[i] += 1
                     if not personal_space_violation:
                         personal_space_violation = True
-                        self.social_distance += d_ped_rob
+                        social_distance_list.append(d_ped_rob)
+
+        if len(social_distance_list) > 0:
+            self.social_distance += sum(social_distance_list) / len(social_distance_list)
 
         return info
 
