@@ -671,7 +671,7 @@ class SocialNavRandomTask(PointNavRandomTask):
                                  env.current_step)
             for i, psv_step in enumerate(self.personal_space_violation_steps):
                 info[f'psc_{self.personal_space_violation_threshold[i]}'] = \
-                    1.0 - (self.personal_space_violation_steps[i] / env.current_step)
+                    max(0,0, 1.0 - (self.personal_space_violation_steps[i] / env.current_step))
             if self.personal_space_violation_steps[-1] > 0:
                 info['sd'] = self.social_distance / self.personal_space_violation_steps[-1]
             else:
