@@ -14,6 +14,10 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
             'personal_space_violation_reward', 0.0)
         self.personal_space_violation_threshold = self.config.get(
             'personal_space_violation_threshold', 1.5)
+        if (isinstance(self.personal_space_violation_threshold, list) \
+            or isinstance(self.personal_space_violation_threshold, tuple)
+        ):
+            self.personal_space_violation_threshold = max(self.personal_space_violation_threshold)
         self.use_increasing_violation_reward = bool(self.config.get(
             'use_increasing_violation_reward', False))
         self.use_updated_violation_reward = bool(self.config.get(

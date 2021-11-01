@@ -48,6 +48,9 @@ class SocialNavRandomTask(PointNavRandomTask):
             'not_avoid_robot', False)
         self.personal_space_violation_threshold = self.config.get(
             'personal_space_violation_threshold', 1.5)
+        if isinstance(self.personal_space_violation_threshold, float):
+            self.personal_space_violation_threshold = [self.personal_space_violation_threshold]
+        self.personal_space_violation_threshold = sorted(self.personal_space_violation_threshold)
 
         """
         Parameters for our mechanism of preventing pedestrians to back up.
@@ -332,7 +335,8 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.orca_sim.setAgentPosition(self.robot_orca_ped,
                                         tuple(self.initial_pos[0:2]))
         self.reset_pedestrians(env)
-        self.personal_space_violation_steps = 0
+        self.personal_space_violation_steps = [0] * len(self.personal_space_violation_threshold)
+        self.social_distance = 0
 
     def sample_new_target_pos(self, env, initial_pos, ped_id=None):
         """
@@ -524,11 +528,13 @@ class SocialNavRandomTask(PointNavRandomTask):
         robot_pos = env.robots[0].get_position()[:2]
         for ped in self.pedestrians:
             ped_pos = ped.get_position()[:2]
-            if l2_distance(robot_pos, ped_pos) < self.personal_space_violation_threshold:
-                personal_space_violation = True
-                break
-        if personal_space_violation:
-            self.personal_space_violation_steps += 1
+            d_ped_rob = l2_distance(robot_pos, ped_pos)
+            for i, psv_threshold in enumerate(self.personal_space_violation_threshold):
+                if d_ped_rob < psv_threshold:
+                    self.personal_space_violation_steps[i] += 1
+                    if not personal_space_violation:
+                        personal_space_violation = True
+                        self.social_distance += d_ped_rob
 
         return info
 
@@ -659,11 +665,18 @@ class SocialNavRandomTask(PointNavRandomTask):
         done, info = super(SocialNavRandomTask, self).get_termination(
             env, collision_links, action, info)
         if done:
-            info['psc'] = 1.0 - (self.personal_space_violation_steps /
+            info['psc'] = 1.0 - (self.personal_space_violation_steps[-1] /
                                  env.config.get('max_step', 500))
-            info['psc_real'] = 1.0 - (self.personal_space_violation_steps /
+            info['psc_real'] = 1.0 - (self.personal_space_violation_steps[-1] /
                                  env.current_step)
-            info['ps_violation'] = self.personal_space_violation_steps
+            for i, psv_step in enumerate(self.personal_space_violation_steps):
+                info[f'psc_{self.personal_space_violation_threshold[i]}'] = \
+                    1.0 - (self.personal_space_violation_steps[i] / env.current_step)
+            if self.personal_space_violation_steps[-1] > 0:
+                info['sd'] = self.social_distance / self.personal_space_violation_steps[-1]
+            else:
+                info['sd'] = 0.0
+            info['ps_violation'] = sum(self.personal_space_violation_steps)
             if self.offline_eval:
                 episode_index = self.episode_config.episode_index
                 if isinstance(self.episode_config.episodes[episode_index]['orca_timesteps'], int):
@@ -680,6 +693,9 @@ class SocialNavRandomTask(PointNavRandomTask):
             info['stl'] = 0.0
             info['psc_real'] = 0.0
             info['ps_violation'] = 0.0
+            info['sd'] = 0.0
+            for i, psv_step in enumerate(self.personal_space_violation_steps):
+                info[f'psc_{self.personal_space_violation_threshold[i]}'] = 0.0
         info['sns'] = (info['psc_real'] + info['stl'] + info['spl']) / 3.
         # info['score'] = info['sns']
         info['num_pedestrians'] = self.num_pedestrians
