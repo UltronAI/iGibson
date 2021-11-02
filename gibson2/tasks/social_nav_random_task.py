@@ -683,7 +683,7 @@ class SocialNavRandomTask(PointNavRandomTask):
                 info['sd'] = self.social_distance / self.personal_space_violation_steps[-1]
             else:
                 info['sd'] = 0.0
-            info['ps_violation'] = sum(self.personal_space_violation_steps)
+            info['ps_violation'] = self.personal_space_violation_steps[-1]
             if self.offline_eval:
                 episode_index = self.episode_config.episode_index
                 if isinstance(self.episode_config.episodes[episode_index]['orca_timesteps'], int):
