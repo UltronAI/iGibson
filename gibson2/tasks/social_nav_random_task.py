@@ -711,24 +711,42 @@ class SocialNavRandomTask(PointNavRandomTask):
     def get_global_infos(self, env):
         global_infos = super(SocialNavRandomTask, self).get_global_infos(env)
 
+        def set_value(arr, m, n, v):
+            m = min(m, arr.shape[0] - 1)
+            n = min(n, arr.shape[1] - 1)
+            arr[m, n] = v
+            return arr
+
         pedestrian_pos_map = np.zeros_like(self.trav_map)
         for ped_pos in self.get_pedestrians_pos():
             map_xy = env.scene.world_to_map(np.array(ped_pos[:2]))
-            pedestrian_pos_map[map_xy[0], map_xy[1]] = 1.0
+            pedestrian_pos_map = set_value(
+                pedestrian_pos_map, 
+                map_xy[0], map_xy[1], 
+                1.0)
+            # pedestrian_pos_map[map_xy[0], map_xy[1]] = 1.0
         global_infos["pedestrian_pos"] = self.crop_map(pedestrian_pos_map)
 
         pedestrian_waypoints_map = np.zeros_like(self.trav_map)
         for ped_waypoints in self.pedestrian_waypoints:
             for i, pos_waypoint in enumerate(ped_waypoints):
                 map_xy = env.scene.world_to_map(np.array(pos_waypoint[:2]))
-                pedestrian_waypoints_map[map_xy[0], map_xy[1]] = 1.0 - i / len(ped_waypoints)
+                pedestrian_waypoints_map = set_value(
+                    pedestrian_waypoints_map, 
+                    map_xy[0], map_xy[1], 
+                    1.0 - i / len(ped_waypoints))
+                # pedestrian_waypoints_map[map_xy[0], map_xy[1]] = 1.0 - i / len(ped_waypoints)
         global_infos["pedestrian_waypoints"] = self.crop_map(pedestrian_waypoints_map)
 
         pedestrian_trajs_map = np.zeros_like(self.trav_map)
         for ped_traj in self.pedestrian_trajectories:
             for i, pos_traj_p in enumerate(ped_traj):
                 map_xy = env.scene.world_to_map(np.array(pos_traj_p[:2]))
-                pedestrian_trajs_map[map_xy[0], map_xy[1]] = (i + 1.0) / len(ped_traj)
+                pedestrian_trajs_map = set_value(
+                    pedestrian_trajs_map, 
+                    map_xy[0], map_xy[1], 
+                    (i + 1.0) / len(ped_traj))
+                # pedestrian_trajs_map[map_xy[0], map_xy[1]] = (i + 1.0) / len(ped_traj)
         global_infos["pedestrian_trajs"] = self.crop_map(pedestrian_trajs_map)
 
         return global_infos
