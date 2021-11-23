@@ -27,11 +27,6 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.reward_functions.append(PedestrianCollisionReward(self.config))
         self.reward_functions.append(PersonalSpaceViolationReward(self.config))
 
-        self.compute_orca_velo = self.config.get(
-            'compute_orca_velo', False)
-        self.use_ped_map = self.config.get(
-            'use_ped_map', False)
-
         # Decide on how many pedestrians to load based on scene size
         # Each pixel is 0.01 square meter
         num_sqrt_meter = env.scene.floor_map[0].nonzero()[0].shape[0] / 100.0
@@ -44,8 +39,6 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.num_pedestrians = min(10, max(1, int(
                 num_sqrt_meter / self.num_sqrt_meter_per_ped)))
 
-        self.not_avoid_robot = self.config.get(
-            'not_avoid_robot', False)
         self.personal_space_violation_threshold = self.config.get(
             'personal_space_violation_threshold', 1.5)
         if isinstance(self.personal_space_violation_threshold, float):
@@ -188,8 +181,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         :param env: environment instance
         :return: a list of pedestrians
         """
-        if not self.not_avoid_robot:
-            self.robot_orca_ped = self.orca_sim.addAgent((0, 0))
+        self.robot_orca_ped = self.orca_sim.addAgent((0, 0))
         pedestrians = []
         orca_pedestrians = []
         for i in range(self.num_pedestrians):
@@ -331,8 +323,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.shortest_path, self.distance_to_goal = self.get_shortest_path(env, True, True)
             self.geodesic_dist = self.distance_to_goal
 
-        if not self.not_avoid_robot:
-            self.orca_sim.setAgentPosition(self.robot_orca_ped,
+        self.orca_sim.setAgentPosition(self.robot_orca_ped,
                                         tuple(self.initial_pos[0:2]))
         self.reset_pedestrians(env)
         self.personal_space_violation_steps = [0] * len(self.personal_space_violation_threshold)
@@ -424,20 +415,9 @@ class SocialNavRandomTask(PointNavRandomTask):
         super(SocialNavRandomTask, self).step(env, info)
         robot_current_pos = env.robots[0].get_position()[0:2]
         robot_current_rpy = env.robots[0].get_rpy()
-        if not self.not_avoid_robot:    
-            self.orca_sim.setAgentPosition(
+        self.orca_sim.setAgentPosition(
                 self.robot_orca_ped,
                 tuple(robot_current_pos))
-
-            if self.compute_orca_velo:
-                shortest_path, _ = self.get_shortest_path(env)
-                waypoints = self.shortest_path_to_waypoints(shortest_path)
-                next_goal = shortest_path[0]
-
-                desired_vel = next_goal - robot_current_pos
-                desired_vel = desired_vel / np.linalg.norm(desired_vel) * 0.5 # robot's max linear velo
-                self.orca_sim.setAgentPrefVelocity(self.robot_orca_ped, tuple(desired_vel))
-                # print("desired vel", desired_vel)
 
         for i, (ped, orca_ped, waypoints) in \
                 enumerate(zip(self.pedestrians,
@@ -469,27 +449,8 @@ class SocialNavRandomTask(PointNavRandomTask):
 
         self.orca_sim.doStep()
 
-        if not self.not_avoid_robot:
-            if self.compute_orca_velo:
-                orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
-                orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
-                current_yaw = robot_current_rpy[-1]
-                relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
-                if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
-                    target_velo = [1.0, 0.0]
-                elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
-                    target_velo = [0.0, 1.0]
-                else:
-                    target_velo = [0.0, -1.0]
-                info["orca_velo"] = target_velo
-            else:
-                info["orca_velo"] = [0.0, 0.0]
-
         next_peds_pos_xyz, next_peds_stop_flag = \
             self.update_pos_and_stop_flags()
-
-        if self.use_ped_map:
-            ped_map = np.zeros([100, 100])
 
         # Update the pedestrian position in PyBullet if it does not stop
         # Otherwise, revert back the position in RVO2 simulator
@@ -513,16 +474,6 @@ class SocialNavRandomTask(PointNavRandomTask):
 
                 self.pedestrian_trajectories[i].append(pos_xyz)
 
-            if self.use_ped_map:
-                ped_map = self.check_and_draw_pedestrian(
-                    ped_map, robot_current_pos, robot_current_rpy, pos_xyz)
-                if len(waypoints) > 0:
-                    ped_map = self.check_and_draw_pedestrian(
-                        ped_map, robot_current_pos, robot_current_pos, waypoints[0])
-
-        if self.use_ped_map:
-            info["ped_map"] = ped_map[..., None]
-
         # Detect robot's personal space violation
         current_personal_space_violation_flags = [False] * len(self.personal_space_violation_threshold)
         social_distance_list = []
@@ -544,33 +495,6 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.social_distance += sum(social_distance_list) / len(social_distance_list)
 
         return info
-
-    #TODO: map resolution as an argument
-    #TODO: for now, it's hard-code with pedestrian_threshold = 0.3
-    def check_and_draw_pedestrian(self, ped_map, robot_pos, robot_rpy, pedestrian_pos, map_resolution=0.1):
-        h, w = ped_map.shape # h should be equal to w
-        vision_range = h // 2
-        relative_pos = np.array(list(pedestrian_pos[:2] - robot_pos[:2]))
-        rot_matrix = angle2rotmat(robot_rpy[-1])
-        relative_pos = rot_matrix @ relative_pos
-        relative_coord = np.round(relative_pos / map_resolution)
-        coord = relative_coord + np.array([vision_range, vision_range])
-
-        if np.abs(relative_coord[0]) >= vision_range or np.abs(relative_coord[1]) >= vision_range:
-            return ped_map
-        
-        else:
-            rel = np.array([     
-                                   [0, -2],
-                         [-1, -1], [0, -1], [1, -1],
-                [-2, 0], [-1,  0], [0,  0], [1,  0], [2, 0],
-                         [-1,  1], [0,  1], [1,  1],
-                                   [0,  2]
-            ])
-            c = np.clip(coord + rel, 0, h-1)
-            ped_map[tuple(c.transpose(1, 0).astype(np.long))] = 1.0
-
-        return ped_map
 
     def update_pos_and_stop_flags(self):
         """
