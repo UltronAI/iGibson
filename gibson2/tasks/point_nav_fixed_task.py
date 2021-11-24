@@ -343,10 +343,16 @@ class PointNavFixedTask(BaseTask):
         padding_row_u = abs(max(row_max - original_map.shape[0], 0))
         padding_col_b = abs(min(col_min, 0))
         padding_col_u = abs(max(col_max - original_map.shape[1], 0))
-        new_map = np.pad(
-            original_map,
-            ((padding_row_b, padding_row_u), (padding_col_b, padding_col_u))
-        )
+        if len(original_map.shape) == 2:
+            new_map = np.pad(
+                original_map,
+                ((padding_row_b, padding_row_u), (padding_col_b, padding_col_u))
+            )
+        else:
+            new_map = np.pad(
+                original_map,
+                ((padding_row_b, padding_row_u), (padding_col_b, padding_col_u), (0, 0))
+            )
         return new_map[
             row_min + padding_row_b: row_max + padding_row_b,
             col_min + padding_col_b: col_max + padding_col_b,]

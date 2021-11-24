@@ -122,8 +122,12 @@ class IndoorScene(Scene):
                 trav_map[obstacle_map == 0] = 0
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
-            self.original_trav_map = trav_map
-            self.original_trav_map[trav_map < 255] = 0
+
+            print(f"loading {os.path.join(maps_path, f'floor_trav_{floor}.png')}")
+            self.original_trav_map = cv2.resize(np.array(Image.open(
+                os.path.join(maps_path, f'floor_trav_{floor}.png')
+            )), (self.trav_map_size, self.trav_map_size))
+            self.original_trav_map[self.original_trav_map < 255] = 0
 
             trav_map = cv2.erode(trav_map, np.ones(
                 (self.trav_map_erosion, self.trav_map_erosion)))

@@ -172,9 +172,9 @@ def get_top_down_map(env, traj=[]):
     if hasattr(env.task, "pedestrians"):
         pedestrian_positions = env.task.get_pedestrians_pos()
         pedestrian_positions = [env.scene.world_to_map(np.asarray(ped_pos[:2])) for ped_pos in pedestrian_positions]
-    if hasattr(env.task, "pedestrian_waypoints"):
-        for waypoints in env.task.pedestrian_waypoints:
-            pedestrian_waypoints.append([env.scene.world_to_map(p) for p in waypoints])
+    # if hasattr(env.task, "pedestrian_waypoints"):
+    #     for waypoints in env.task.pedestrian_waypoints:
+    #         pedestrian_waypoints.append([env.scene.world_to_map(p) for p in waypoints])
 
     if len(traj) > 0:
         traj = [env.scene.world_to_map(p[:2]) for p in traj]
@@ -183,10 +183,10 @@ def get_top_down_map(env, traj=[]):
 
     if len(pedestrian_positions) > 0:
         for ped_pos in pedestrian_positions:
-            top_down_map = draw_circle(top_down_map, ped_pos, (255, 0, 255), 5)
-    if len(pedestrian_waypoints) > 0:
-        for waypoints in pedestrian_waypoints:
-            top_down_map = draw_path(top_down_map, waypoints, (255, 0, 255), 1)
+            top_down_map = draw_circle(top_down_map, ped_pos, (125, 0, 125), 3)
+    # if len(pedestrian_waypoints) > 0:
+    #     for waypoints in pedestrian_waypoints:
+    #         top_down_map = draw_path(top_down_map, waypoints, (255, 0, 255), 1)
 
     top_down_map = draw_path(top_down_map, shortest_path, (0, 0, 255), 1)
     if len(traj) > 0:
@@ -198,9 +198,9 @@ def get_top_down_map(env, traj=[]):
         top_down_map,
         current_pos,
         current_angle,
-        agent_radius_px=4
+        agent_radius_px=5
     )
-    return top_down_map
+    return env.task.crop_map(top_down_map)
 
 def get_video_frame(obs, env, traj):
     frame = []
