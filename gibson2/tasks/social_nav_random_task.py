@@ -470,20 +470,20 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.orca_sim.doStep()
 
         if not self.not_avoid_robot:
-            if self.compute_orca_velo:
-                orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
-                orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
-                current_yaw = robot_current_rpy[-1]
-                relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
-                if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
-                    target_velo = [1.0, 0.0]
-                elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
-                    target_velo = [0.0, 1.0]
-                else:
-                    target_velo = [0.0, -1.0]
-                info["orca_velo"] = target_velo
-            else:
-                info["orca_velo"] = [0.0, 0.0]
+            # if self.compute_orca_velo:
+            #     orca_velo = self.orca_sim.getAgentVelocity(self.robot_orca_ped)
+            #     orca_velo_rho, orca_velo_phi = cartesian_to_polar(orca_velo[0], orca_velo[1])
+            #     current_yaw = robot_current_rpy[-1]
+            #     relative_angle = (orca_velo_phi - current_yaw) % (2 * np.pi)
+            #     if relative_angle <= np.pi / 4 or relative_angle >= np.pi * 3 / 4:
+            #         target_velo = [1.0, 0.0]
+            #     elif relative_angle > np.pi / 4 and relative_angle <= np.pi / 2:
+            #         target_velo = [0.0, 1.0]
+            #     else:
+            #         target_velo = [0.0, -1.0]
+            #     info["orca_velo"] = target_velo
+            # else:
+            info["orca_velo"] = [0.0, 0.0]
 
         next_peds_pos_xyz, next_peds_stop_flag = \
             self.update_pos_and_stop_flags()
