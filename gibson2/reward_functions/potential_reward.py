@@ -24,7 +24,7 @@ class PotentialReward(BaseRewardFunction):
         """
         self.potential = task.get_potential(env)
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         """
         Reward is proportional to the potential difference between
         the current and previous timestep

@@ -15,7 +15,7 @@ class PedestrianCollisionReward(BaseRewardFunction):
             'pedestrian_collision_threshold', 0.3)
         print('pedestrian_collision_reward', self.pedestrian_collision_reward)
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         """
         Reward is self.pedestrian_collision_reward if there is collision with pedestrians
         in the last timestep

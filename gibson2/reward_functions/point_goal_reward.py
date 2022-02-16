@@ -16,7 +16,7 @@ class PointGoalReward(BaseRewardFunction):
         self.dist_tol = self.config.get('dist_tol', 0.5)
         print('success_reward', self.success_reward)
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         """
         Check if the distance between the robot's base and the goal
         is below the distance threshold
@@ -28,6 +28,7 @@ class PointGoalReward(BaseRewardFunction):
         success = l2_distance(
             env.robots[0].get_position()[:2],
             task.target_pos[:2]) < self.dist_tol
+        success = success and (action is None)
         reward = self.success_reward if success else 0.0
         return reward
 

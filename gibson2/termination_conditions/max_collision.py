@@ -13,7 +13,7 @@ class MaxCollision(BaseTerminationCondition):
         self.max_collisions_allowed = self.config.get(
             'max_collisions_allowed', 500)
 
-    def get_termination(self, task, env):
+    def get_termination(self, task, env, action):
         """
         Return whether the episode should terminate.
         Terminate if the robot has collided more than self.max_collisions_allowed times

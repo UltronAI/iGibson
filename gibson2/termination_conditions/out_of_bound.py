@@ -13,7 +13,7 @@ class OutOfBound(BaseTerminationCondition):
         self.fall_off_thresh = self.config.get(
             'fall_off_thresh', 0.03)
 
-    def get_termination(self, task, env):
+    def get_termination(self, task, env, action):
         """
         Return whether the episode should terminate.
         Terminate if the robot goes outside the valid region

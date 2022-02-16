@@ -15,7 +15,7 @@ class SlackReward(BaseRewardFunction):
     def reset(self, task, env):
         pass
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         return self.slack_reward
 
     def update_weights(self, new_weights):

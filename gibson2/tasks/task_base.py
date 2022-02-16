@@ -49,7 +49,7 @@ class BaseTask():
         rewards = {}
         for reward_function in self.reward_functions:
             # reward += reward_function.get_reward(self, env)
-            rewards[reward_function.name] = reward_function.get_reward(self, env)
+            rewards[reward_function.name] = reward_function.get_reward(self, env, action)
         return rewards, info
 
     def get_termination(self, env, collision_links=[], action=None, info={}):
@@ -66,7 +66,7 @@ class BaseTask():
         done = False
         success = False
         for condition in self.termination_conditions:
-            d, s = condition.get_termination(self, env)
+            d, s = condition.get_termination(self, env, action)
             done = done or d
             success = success or s
             info[f'done_{condition.__class__.__name__}'] = d

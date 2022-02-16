@@ -14,7 +14,7 @@ class CollisionReward(BaseRewardFunction):
         )
         print('collision_reward_weight', self.collision_reward_weight)
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         """
         Reward is self.collision_reward_weight if there is collision
         in the last timestep

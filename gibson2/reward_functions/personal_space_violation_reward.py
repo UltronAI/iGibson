@@ -26,7 +26,7 @@ class PersonalSpaceViolationReward(BaseRewardFunction):
         print('use_increasing_violation_reward', self.use_increasing_violation_reward)
         print('use_updated_violation_reward', self.use_updated_violation_reward)
 
-    def get_reward(self, task, env):
+    def get_reward(self, task, env, action):
         """
         Reward is self.personal_space_violation_weight if there is personal_space_violation
         in the last timestep

@@ -12,7 +12,7 @@ class ReachingGoal(BaseTerminationCondition):
         super(ReachingGoal, self).__init__(config)
         self.dist_tol = self.config.get('dist_tol', 0.5)
 
-    def get_termination(self, task, env):
+    def get_termination(self, task, env, action):
         """
         Return whether the episode should terminate.
         Terminate if reaching goal is reached (distance below threshold)

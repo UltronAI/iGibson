@@ -14,7 +14,7 @@ class PedestrianCollision(BaseTerminationCondition):
         self.pedestrian_collision_threshold = self.config.get(
             'pedestrian_collision_threshold', 0.3)
 
-    def get_termination(self, task, env):
+    def get_termination(self, task, env, action):
         """
         Return whether the episode should terminate.
         Terminate if the robot has collided more than self.max_collisions_allowed times
