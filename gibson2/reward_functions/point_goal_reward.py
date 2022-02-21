@@ -18,6 +18,7 @@ class PointGoalReward(BaseRewardFunction):
         )
         self.dist_tol = self.config.get('dist_tol', 0.5)
         print('success_reward', self.success_reward)
+        print('false_stop_reward', self.false_stop_reward)
 
     def get_reward(self, task, env, action):
         """
