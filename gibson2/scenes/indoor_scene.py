@@ -130,6 +130,8 @@ class IndoorScene(Scene):
             trav_map[trav_map < 255] = 0
             self.debug_trav_map = trav_map
 
+            print("trav map size", trav_map.shape)
+
             if self.build_graph:
                 self.build_trav_graph(maps_path, floor, trav_map)
             self.floor_map.append(trav_map)

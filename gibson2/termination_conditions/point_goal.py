@@ -24,7 +24,7 @@ class PointGoal(BaseTerminationCondition):
         task_done = l2_distance(
             env.robots[0].get_position()[:2],
             task.target_pos[:2]) < self.dist_tol
-        # done = task_done or (action is None) 
-        done = (action is None)
-        success = task_done and (action is None)
+        done = task_done #or (action is None) 
+        # done = (action is None)
+        success = task_done # and (action is None)
         return done, success
