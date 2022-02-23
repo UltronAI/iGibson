@@ -1,4 +1,5 @@
 from gibson2.episodes.episode_sample import SocialNavEpisodesConfig
+from gibson2.reward_functions.false_stop_reward import FalseStopReward
 from gibson2.tasks.point_nav_random_task import PointNavRandomTask
 from gibson2.objects.visual_marker import VisualMarker
 from gibson2.objects.pedestrian import Pedestrian
@@ -26,6 +27,7 @@ class SocialNavRandomTask(PointNavRandomTask):
         self.termination_conditions.append(PedestrianCollision(self.config))
         self.reward_functions.append(PedestrianCollisionReward(self.config))
         self.reward_functions.append(PersonalSpaceViolationReward(self.config))
+        self.reward_functions.append(FalseStopReward(self.config))
 
         # Decide on how many pedestrians to load based on scene size
         # Each pixel is 0.01 square meter
