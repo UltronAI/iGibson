@@ -26,18 +26,26 @@ angular_velocity: 1.5707963267948966
 # task
 task: social_nav_random
 target_dist_min: 1.0
-target_dist_max: 10.0
+target_dist_max: 20.0
 goal_format: polar
 task_obs_dim: 4
 waypoint_resolution: 0.1
 orca_radius: 0.5
 pedestrian_collision_threshold: 0.3
 
+num_sqrt_meter_per_ped: 5
+
 # reward
 reward_type: geodesic
 success_reward: 10.0
 potential_reward_weight: 1.0
 collision_reward_weight: 0.0
+slack_reward: -0.01
+
+# pedestrian_collision_reward: -10.0
+# personal_space_violation_reward: -0.05
+# use_increasing_violation_reward: False
+# use_updated_violation_reward: True
 
 # discount factor
 discount_factor: 0.99

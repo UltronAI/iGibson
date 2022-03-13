@@ -10,7 +10,7 @@ AGENT_SPRITE = imageio.imread(
     os.path.join(
         str(gibson2.__path__[0]),
         "utils",
-        "arrow.png",
+        "100x100.png",
     )
 )
 AGENT_SPRITE = np.ascontiguousarray(np.flipud(AGENT_SPRITE))
@@ -160,46 +160,53 @@ def paste_overlapping_image(
         background_patch[:] = foreground
     return background
 
-def get_top_down_map(env, traj=[]):
-    top_down_map = np.copy(env.scene.original_trav_map)
+def get_top_down_map(env, traj=[], scale_factors=[1, 1]):
+    top_down_map = np.copy(env.scene.plot_map)
     top_down_map = np.stack([top_down_map] * 3, axis=2)
     init_pos = env.scene.world_to_map(env.task.initial_pos[:2])
     goal_pos = env.scene.world_to_map(env.task.target_pos[:2])
-    shortest_path = [env.scene.world_to_map(p) for p in env.task.shortest_path]
+    # print("get_top_down_map START!")
+    shortest_path = [np.round(env.scene.world_to_map(p) * 10) for p in env.task.shortest_path]
+    # print("get_top_down_map MARK-1!")
 
     pedestrian_positions = []
     pedestrian_waypoints = []
     if hasattr(env.task, "pedestrians"):
         pedestrian_positions = env.task.get_pedestrians_pos()
-        pedestrian_positions = [env.scene.world_to_map(np.asarray(ped_pos[:2])) for ped_pos in pedestrian_positions]
+        pedestrian_positions = [np.round(env.scene.world_to_map(np.asarray(ped_pos[:2])) * 10) for ped_pos in pedestrian_positions]
+        # print("get_top_down_map MARK-2!")
     if hasattr(env.task, "pedestrian_waypoints"):
         for waypoints in env.task.pedestrian_waypoints:
-            pedestrian_waypoints.append([env.scene.world_to_map(p) for p in waypoints])
+            pedestrian_waypoints.append([np.round(env.scene.world_to_map(p) * 10) for p in waypoints])
+        # print("get_top_down_map MARK-3!")
 
     if len(traj) > 0:
-        traj = [env.scene.world_to_map(p[:2]) for p in traj]
+        traj = [np.round(env.scene.world_to_map(p[:2]) * 10) for p in traj]
+        # print("get_top_down_map MARK-4!")
     current_pos = env.scene.world_to_map(env.robots[0].get_position()[:2])
     current_angle = env.robots[0].get_rpy()[2]
 
     if len(pedestrian_positions) > 0:
         for ped_pos in pedestrian_positions:
-            top_down_map = draw_circle(top_down_map, ped_pos, (255, 0, 255), 5)
-    if len(pedestrian_waypoints) > 0:
-        for waypoints in pedestrian_waypoints:
-            top_down_map = draw_path(top_down_map, waypoints, (255, 0, 255), 1)
+            top_down_map = draw_circle(top_down_map, ped_pos, (237, 125, 49), 30)
+        # print("get_top_down_map MARK-5!")
+    # if len(pedestrian_waypoints) > 0:
+    #     for waypoints in pedestrian_waypoints:
+    #         top_down_map = draw_path(top_down_map, waypoints, (255, 0, 255), 1)
 
-    top_down_map = draw_path(top_down_map, shortest_path, (0, 0, 255), 1)
+    top_down_map = draw_path(top_down_map, shortest_path, (0, 0, 255), 5)
     if len(traj) > 0:
-        top_down_map = draw_path(top_down_map, traj, (255, 0, 0), 1)
-    top_down_map = draw_circle(top_down_map, init_pos, (0, 0, 255), 1)
-    top_down_map = draw_circle(top_down_map, goal_pos, (0, 255, 0), 1)
+        top_down_map = draw_path(top_down_map, traj, (255, 0, 0), 5)
+    top_down_map = draw_circle(top_down_map, np.round(init_pos * 10), (0, 0, 255), 30)
+    top_down_map = draw_circle(top_down_map, np.round(goal_pos * 10), (0, 255, 0), 30)
 
     top_down_map = draw_agent(
         top_down_map,
-        current_pos,
+        np.round(current_pos * 10),
         current_angle,
-        agent_radius_px=4
+        agent_radius_px=30
     )
+    # print("get_top_down_map DONE!")
     return top_down_map
 
 def get_video_frame(obs, env, traj):

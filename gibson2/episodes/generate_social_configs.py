@@ -49,7 +49,7 @@ if __name__ == '__main__':
     num_episodes = episode_config.get('num_episodes', 100)
     numpy_seed = episode_config.get('numpy_seed', 0)
     episode_length = SocialNavEpisodesConfig.MAX_EPISODE_LENGTH
-    raw_num_episodes = num_episodes * 8
+    raw_num_episodes = num_episodes #* 8
 
     dataset_split = {
         'minival': ['Rs_int'],
@@ -114,6 +114,8 @@ if __name__ == '__main__':
 
             # Save episodeConfig object with 3x the episodes needed
             path = episode_config.save_scene_episodes(file_name, split, args.postfix)
+
+            continue
 
             # Load these episodes one by one and filter in only episodes
             # in which the ORCA agent that represents the robot

@@ -117,7 +117,7 @@ class SocialNavEpisodesConfig(EpisodeConfig):
         """
         dir_path = os.path.join(
             os.path.dirname(gibson2.__file__),
-            'episodes', 'data_1-20', 'social_nav' if postfix is None else 'social_nav' + '_' + postfix, split)
+            'episodes', 'data_pa3', 'social_nav' if postfix is None else 'social_nav' + '_' + postfix, split)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         path = os.path.join(dir_path, filename)

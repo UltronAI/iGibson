@@ -155,7 +155,7 @@ class SocialNavRandomTask(PointNavRandomTask):
             self.episode_config = \
                 SocialNavEpisodesConfig.load_scene_episode_config(path)
             if self.num_pedestrians != self.episode_config.num_pedestrians:
-                assert self.num_pedestrians >= self.episode_config.num_pedestrians
+                # assert self.num_pedestrians >= self.episode_config.num_pedestrians, f"{self.num_pedestrians} should be not less than {self.episode_config.num_pedestrians}"
                 # raise ValueError("The episode samples did not record records for more than {} pedestrians, but got {}".format(
                 #     self.num_pedestrians, self.episode_config.num_pedestrians))
                 print("The episode samples did not record records for more than {} pedestrians, but got {}".format(
@@ -177,6 +177,12 @@ class SocialNavRandomTask(PointNavRandomTask):
 
             self.number_of_episodes = self.episode_config.num_episodes
             self.episode_index = self.episode_config.episode_index
+
+            episode_id = self.config.get("episode_id", -1)
+            if episode_id >= 0:
+                self.number_of_episodes = 1
+                self.episode_config.num_episodes = 1
+                self.episode_config.episodes = [self.episode_config.episodes[episode_id]]
 
     def load_pedestrians(self, env):
         """
@@ -288,12 +294,17 @@ class SocialNavRandomTask(PointNavRandomTask):
         for ped_id, (ped, orca_ped) in enumerate(zip(self.pedestrians, self.orca_pedestrians)):
             if self.offline_eval_socialnav:
                 episode_index = self.episode_config.episode_index
-                initial_pos = np.array(
-                    self.episode_config.episodes[episode_index]['pedestrians'][ped_id]['initial_pos'])
-                initial_orn = np.array(
-                    self.episode_config.episodes[episode_index]['pedestrians'][ped_id]['initial_orn'])
-                waypoints = self.sample_new_target_pos(
-                    env, initial_pos, ped_id)
+                if ped_id < len(self.episode_config.episodes[episode_index]['pedestrians']):
+                    initial_pos = np.array(
+                        self.episode_config.episodes[episode_index]['pedestrians'][ped_id]['initial_pos'])
+                    initial_orn = np.array(
+                        self.episode_config.episodes[episode_index]['pedestrians'][ped_id]['initial_orn'])
+                    waypoints = self.sample_new_target_pos(
+                        env, initial_pos, ped_id)
+                else:
+                    initial_pos = self.sample_initial_pos(env, ped_id)
+                    initial_orn = p.getQuaternionFromEuler(ped.default_orn_euler)
+                    waypoints = self.sample_new_target_pos(env, initial_pos)
             else:
                 initial_pos = self.sample_initial_pos(env, ped_id)
                 initial_orn = p.getQuaternionFromEuler(ped.default_orn_euler)
@@ -349,10 +360,10 @@ class SocialNavRandomTask(PointNavRandomTask):
         """
 
         while True:
-            if self.offline_eval_socialnav:
-                if ped_id is None:
-                    raise ValueError(
-                        "The id of the pedestrian to get the goal position was not specified")
+            if self.offline_eval_socialnav and ped_id is not None:
+                # if ped_id is None:
+                #     raise ValueError(
+                #         "The id of the pedestrian to get the goal position was not specified")
                 episode_index = self.episode_config.episode_index
                 pos_index = self.episode_config.goal_index[ped_id]
                 sampled_goals = self.episode_config.episodes[

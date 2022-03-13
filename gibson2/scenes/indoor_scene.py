@@ -78,6 +78,7 @@ class IndoorScene(Scene):
                     load_x_map = True
                     not_loaded = "-".join(self.not_load_object_categories)
                     trav_map_x_path = os.path.join(maps_path, f'floor_trav_{floor}_{not_loaded}.png')
+                    plot_map_x_path = os.path.join(maps_path, f'floor_{floor}_{not_loaded}.png')
                 else:
                     load_x_map = False
                 trav_map_path = os.path.join(maps_path, f'floor_trav_{floor}.png')
@@ -89,6 +90,7 @@ class IndoorScene(Scene):
                 elif load_x_map:
                     print(f"loading trav_map from {trav_map_x_path}")
                     trav_map = np.array(Image.open(trav_map_x_path))
+                    plot_map = np.array(Image.open(plot_map_x_path))
                 else:
                     print(f"loading trav_map from {trav_map_path}")
                     trav_map = np.array(Image.open(trav_map_path))
@@ -106,6 +108,10 @@ class IndoorScene(Scene):
                     os.path.join(
                         maps_path, 'floor_trav_no_obj_{}.png'.format(floor))
                 ))
+                plot_map = np.array(Image.open(
+                    os.path.join(
+                        maps_path, 'floor_{}.png'.format(floor))
+                ))
                 obstacle_map = np.array(Image.open(
                     os.path.join(
                         maps_path, 'floor_no_obj_{}.png'.format(floor))
@@ -122,6 +128,9 @@ class IndoorScene(Scene):
                 trav_map[obstacle_map == 0] = 0
             trav_map = cv2.resize(
                 trav_map, (self.trav_map_size, self.trav_map_size))
+            # plot_map = cv2.resize(
+            #     plot_map, (self.trav_map_size, self.trav_map_size), interpolation=cv2.INTER_NEAREST)
+            # plot_map[plot_map < 255] = 0
             self.original_trav_map = trav_map
             self.original_trav_map[trav_map < 255] = 0
 
@@ -129,6 +138,7 @@ class IndoorScene(Scene):
                 (self.trav_map_erosion, self.trav_map_erosion)))
             trav_map[trav_map < 255] = 0
             self.debug_trav_map = trav_map
+            self.plot_map = plot_map
 
             print("trav map size", trav_map.shape)
 

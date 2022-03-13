@@ -13,19 +13,9 @@ class iGibsonEnv(object):
         self.mode = args.mode
         self.scenario_name = args.scenario_name
         self.config = gibson2.__path__[0] + '/examples/configs/' + str(self.scenario_name) + '.yaml'
-
-        try:
-            reward_weights = {
-                'collision_reward_weight': args.collision_reward_weight,
-                'potential_reward_weight': args.potential_reward_weight
-            }
-        except:
-            reward_weights = None
-
-        try:
-            image_size = (args.frame_width, args.frame_height)
-        except:
-            image_size = None
+        self._use_discrete_action = args.use_discrete_action
+        if self._use_discrete_action:
+            self.split_n = args.num_actions
 
         self.env = inner_iGibsonEnv(config_file=self.config,
                                     mode=self.mode,
@@ -33,8 +23,6 @@ class iGibsonEnv(object):
                                     action_timestep=1.0 / 10.0,
                                     physics_timestep=1.0 / 240.0,
                                     device_idx=args.render_gpu_ids[0] if device_idx is None else device_idx,
-                                    reward_weights=reward_weights,
-                                    image_size=image_size
                                     )
         
         self.observation_space = []
@@ -43,7 +31,10 @@ class iGibsonEnv(object):
         for agent_id in range(self.num_agents):
             self.observation_space.append(self.env.observation_space)
             self.share_observation_space.append(self.env.observation_space)
-            self.action_space.append(self.env.action_space)
+            if not self._use_discrete_action:
+                self.action_space.append(self.env.action_space)
+            else:
+                self.action_space.append(self.load_discrete_action_space())
 
     def seed(self, seed=None):
         if seed is None:
@@ -55,17 +46,33 @@ class iGibsonEnv(object):
         obs = self.env.reset()
         for key, value in obs.items():
             obs[key] = [value]
-        return obs, None
+        return obs, obs, None
 
     def step(self, actions):
-        obs, reward, done, info = self.env.step(actions[0])
+        if self._use_discrete_action:
+            action = self.recover_original_action(actions[0])
+        else:
+            action = actions[0]
+        obs, reward, done, info = self.env.step(action)
+
+        reward = sum(reward.values())
 
         for key, value in obs.items():
             obs[key] = [value]
-        return obs, [[reward]], [done], [info]
+        return obs, obs, [[reward]], [done], [info], None
  
     def close(self):
         self.env.close()
+
+    def load_discrete_action_space(self):
+        return gym.spaces.MultiDiscrete([self.split_n, self.split_n])
+
+    def recover_original_action(self, action):
+        original_action_space = self.env.action_space
+        low = original_action_space.low
+        high = original_action_space.high
+        splited_action_space = np.linspace(low, high, self.split_n)
+        return [splited_action_space[action[0], 0], splited_action_space[action[1], 1]]
 
 
 if __name__ == '__main__':
